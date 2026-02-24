@@ -1,0 +1,346 @@
+{
+  "nodes": [
+    {
+      "id": "face-logic",
+      "type": "group",
+      "x": -624,
+      "y": 55,
+      "width": 520,
+      "height": 310,
+      "label": "Logic/Control — Incidence — Object",
+      "color": "#3D1278"
+    },
+    {
+      "id": "face-ethics",
+      "type": "group",
+      "x": 104,
+      "y": 55,
+      "width": 520,
+      "height": 310,
+      "label": "Ethics — Event — Predicate",
+      "color": "#833C00"
+    },
+    {
+      "id": "face-agency",
+      "type": "group",
+      "x": -260,
+      "y": -575,
+      "width": 520,
+      "height": 310,
+      "label": "Agency — Intent — Subject",
+      "color": "#1F4E79"
+    },
+    {
+      "id": "centroid",
+      "type": "text",
+      "x": -180,
+      "y": -80,
+      "width": 360,
+      "height": 160,
+      "color": "#2E75B6",
+      "text": "**Centroid (0,0,0,0)**\n\n*Meaning — Unknown Unknown*\n\nDual Dodecahedron\nEmergent from all three faces"
+    },
+    {
+      "id": "legend",
+      "type": "text",
+      "x": 1100,
+      "y": -500,
+      "width": 320,
+      "height": 280,
+      "color": "#EEEEEE",
+      "text": "**Drift Levels**\n\n🟢 Green → Platonic\nCanonical definition\n\n🟠 Orange → Archimedean\nInter-document drift\n\n🟣 Purple → Catalan\nIntra-narrative drift\n\n---\n**w coefficient**\nFloat on WordNet depth\nSharding key for graph DB"
+    },
+    {
+      "id": "rumsfeld",
+      "type": "text",
+      "x": -1500,
+      "y": -500,
+      "width": 360,
+      "height": 300,
+      "color": "#EEEEEE",
+      "text": "**Rumsfeldian Epistemic Matrix**\n\nYes → Known Known → Read → StdIn\nNo → Known Unknown → Eval → StdOut\nMaybe → Unknown Known → Print → Port\nStop → Unknown Unknown → Loop → File\n\n---\n*AWK types as platform-agnostic\nplaceholders for any data type*"
+    },
+    {
+      "id": "spo-summary",
+      "type": "text",
+      "x": -180,
+      "y": 1100,
+      "width": 360,
+      "height": 160,
+      "color": "#1F4E79",
+      "text": "**Intent** acts through **Event**\nto produce **Incidence**\n\n*The centroid of all three is the Meaning.*"
+    },
+    {
+      "id": "freedom",
+      "type": "text",
+      "x": -200,
+      "y": -515,
+      "width": 180,
+      "height": 80,
+      "color": "4",
+      "text": "**Freedom**\nKnown Known · StdIn · Read"
+    },
+    {
+      "id": "autonomy",
+      "type": "text",
+      "x": 20,
+      "y": -515,
+      "width": 180,
+      "height": 80,
+      "color": "4",
+      "text": "**Autonomy**\nWill · self-direction"
+    },
+    {
+      "id": "sovereignty",
+      "type": "text",
+      "x": -200,
+      "y": -405,
+      "width": 180,
+      "height": 80,
+      "color": "4",
+      "text": "**Sovereignty**\nPolitical standing"
+    },
+    {
+      "id": "reciprocity",
+      "type": "text",
+      "x": 20,
+      "y": -405,
+      "width": 180,
+      "height": 80,
+      "color": "4",
+      "text": "**Reciprocity**\nMutual obligation"
+    },
+    {
+      "id": "grace",
+      "type": "text",
+      "x": 164,
+      "y": 115,
+      "width": 180,
+      "height": 80,
+      "color": "2",
+      "text": "**Grace**\nKnown Unknown · StdOut · Eval"
+    },
+    {
+      "id": "love",
+      "type": "text",
+      "x": 384,
+      "y": 115,
+      "width": 180,
+      "height": 80,
+      "color": "2",
+      "text": "**Love**\nRelational binding"
+    },
+    {
+      "id": "understanding",
+      "type": "text",
+      "x": 164,
+      "y": 225,
+      "width": 180,
+      "height": 80,
+      "color": "2",
+      "text": "**Understanding**\nHermeneutic encounter"
+    },
+    {
+      "id": "empathy",
+      "type": "text",
+      "x": 384,
+      "y": 225,
+      "width": 180,
+      "height": 80,
+      "color": "2",
+      "text": "**Empathy**\nFelt resonance"
+    },
+    {
+      "id": "stop",
+      "type": "text",
+      "x": -564,
+      "y": 115,
+      "width": 180,
+      "height": 80,
+      "color": "6",
+      "text": "**Stop**\nUnknown Unknown · File · Loop"
+    },
+    {
+      "id": "no",
+      "type": "text",
+      "x": -344,
+      "y": 115,
+      "width": 180,
+      "height": 80,
+      "color": "6",
+      "text": "**No**\nKnown Unknown · StdOut · Eval"
+    },
+    {
+      "id": "yes",
+      "type": "text",
+      "x": -564,
+      "y": 225,
+      "width": 180,
+      "height": 80,
+      "color": "6",
+      "text": "**Yes**\nKnown Known · StdIn · Read"
+    },
+    {
+      "id": "maybe",
+      "type": "text",
+      "x": -344,
+      "y": 225,
+      "width": 180,
+      "height": 80,
+      "color": "6",
+      "text": "**Maybe**\nUnknown Known · Port · Print"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-face-agency-centroid",
+      "fromNode": "freedom",
+      "toNode": "centroid",
+      "color": "4",
+      "label": "Intent (x)",
+      "fromEnd": "none",
+      "toEnd": "arrow"
+    },
+    {
+      "id": "edge-freedom-autonomy",
+      "fromNode": "freedom",
+      "toNode": "autonomy",
+      "color": "4",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "edge-autonomy-sovereignty",
+      "fromNode": "autonomy",
+      "toNode": "sovereignty",
+      "color": "4",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "edge-sovereignty-reciprocity",
+      "fromNode": "sovereignty",
+      "toNode": "reciprocity",
+      "color": "4",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "edge-reciprocity-freedom",
+      "fromNode": "reciprocity",
+      "toNode": "freedom",
+      "color": "4",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "edge-face-ethics-centroid",
+      "fromNode": "grace",
+      "toNode": "centroid",
+      "color": "2",
+      "label": "Event (y)",
+      "fromEnd": "none",
+      "toEnd": "arrow"
+    },
+    {
+      "id": "edge-grace-love",
+      "fromNode": "grace",
+      "toNode": "love",
+      "color": "2",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "edge-love-understanding",
+      "fromNode": "love",
+      "toNode": "understanding",
+      "color": "2",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "edge-understanding-empathy",
+      "fromNode": "understanding",
+      "toNode": "empathy",
+      "color": "2",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "edge-empathy-grace",
+      "fromNode": "empathy",
+      "toNode": "grace",
+      "color": "2",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "edge-face-logic-centroid",
+      "fromNode": "stop",
+      "toNode": "centroid",
+      "color": "6",
+      "label": "Incidence (z)",
+      "fromEnd": "none",
+      "toEnd": "arrow"
+    },
+    {
+      "id": "edge-stop-no",
+      "fromNode": "stop",
+      "toNode": "no",
+      "color": "6",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "edge-no-yes",
+      "fromNode": "no",
+      "toNode": "yes",
+      "color": "6",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "edge-yes-maybe",
+      "fromNode": "yes",
+      "toNode": "maybe",
+      "color": "6",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "edge-maybe-stop",
+      "fromNode": "maybe",
+      "toNode": "stop",
+      "color": "6",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "platonic-demo",
+      "fromNode": "freedom",
+      "toNode": "autonomy",
+      "color": "4",
+      "label": "Platonic — canonical",
+      "fromEnd": "none",
+      "toEnd": "none"
+    },
+    {
+      "id": "archimedean-demo",
+      "fromNode": "sovereignty",
+      "toNode": "grace",
+      "color": "2",
+      "label": "Archimedean — inter-doc drift",
+      "fromEnd": "arrow",
+      "toEnd": "arrow"
+    },
+    {
+      "id": "catalan-demo",
+      "fromNode": "empathy",
+      "toNode": "yes",
+      "color": "6",
+      "label": "Catalan — narrative drift",
+      "fromEnd": "none",
+      "toEnd": "arrow"
+    }
+  ]
+}

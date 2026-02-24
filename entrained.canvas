@@ -1,0 +1,586 @@
+{
+  "nodes": [
+    {
+      "id": "cmt-0-0-1771910115394",
+      "type": "text",
+      "x": -1400,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "4",
+      "text": "**sync** lc=0 t=0\n3/7 faces\nMetatron: KK/subj\nSolomon: KK/subj\nSolon: KU/pred\nAsabiyya: UK/obje"
+    },
+    {
+      "id": "prj-0-0",
+      "type": "text",
+      "x": -1400,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "6",
+      "text": "**projection** lc=1 t=0\n0/7 faces\n"
+    },
+    {
+      "id": "cmt-0-1-1771910115395",
+      "type": "text",
+      "x": -1400,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=2 t=1\n1/7 faces\nMetatron: KK/subj\nSolomon: KK/subj\nSolon: KU/pred\nAsabiyya: UU/cent"
+    },
+    {
+      "id": "cmt-0-37-1771910115431",
+      "type": "text",
+      "x": -1400,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=3 t=37\n2/7 faces\nMetatron: KK/subj\nSolomon: KK/subj\nSolon: KK/subj\nAsabiyya: UU/cent"
+    },
+    {
+      "id": "cmt-0-47-1771910115441",
+      "type": "text",
+      "x": -1180,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=4 t=47\n1/7 faces\nMetatron: KK/subj\nSolomon: UK/obje\nSolon: KK/subj\nAsabiyya: UU/cent"
+    },
+    {
+      "id": "cmt-0-91-1771910115485",
+      "type": "text",
+      "x": -960,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=5 t=91\n2/7 faces\nMetatron: UK/obje\nSolomon: UK/obje\nSolon: KK/subj\nAsabiyya: UU/cent"
+    },
+    {
+      "id": "cmt-0-134-1771910115528",
+      "type": "text",
+      "x": -960,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=6 t=134\n0/7 faces\nMetatron: UK/obje\nSolomon: UK/obje\nSolon: KK/subj\nAsabiyya: UU/cent"
+    },
+    {
+      "id": "cmt-0-181-1771910115575",
+      "type": "text",
+      "x": -520,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=7 t=181\n3/7 faces\nMetatron: UK/obje\nSolomon: UK/obje\nSolon: KK/subj\nAsabiyya: KU/pred"
+    },
+    {
+      "id": "cmt-0-217-1771910115611",
+      "type": "text",
+      "x": -520,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=8 t=217\n3/7 faces\nMetatron: UK/obje\nSolomon: UK/obje\nSolon: UK/obje\nAsabiyya: KU/pred"
+    },
+    {
+      "id": "cmt-0-227-1771910115621",
+      "type": "text",
+      "x": -300,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=9 t=227\n1/7 faces\nMetatron: UK/obje\nSolomon: UU/cent\nSolon: UK/obje\nAsabiyya: KU/pred"
+    },
+    {
+      "id": "cmt-0-271-1771910115665",
+      "type": "text",
+      "x": -80,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=10 t=271\n1/7 faces\nMetatron: UU/cent\nSolomon: UU/cent\nSolon: UK/obje\nAsabiyya: KU/pred"
+    },
+    {
+      "id": "cmt-0-314-1771910115708",
+      "type": "text",
+      "x": -80,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=11 t=314\n0/7 faces\nMetatron: UU/cent\nSolomon: UU/cent\nSolon: UK/obje\nAsabiyya: KU/pred"
+    },
+    {
+      "id": "cmt-0-361-1771910115755",
+      "type": "text",
+      "x": 360,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=12 t=361\n1/7 faces\nMetatron: UU/cent\nSolomon: UU/cent\nSolon: UK/obje\nAsabiyya: KK/subj"
+    },
+    {
+      "id": "cmt-0-397-1771910115791",
+      "type": "text",
+      "x": 360,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=13 t=397\n2/7 faces\nMetatron: UU/cent\nSolomon: UU/cent\nSolon: UU/cent\nAsabiyya: KK/subj"
+    },
+    {
+      "id": "cmt-0-407-1771910115801",
+      "type": "text",
+      "x": 580,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=14 t=407\n0/7 faces\nMetatron: UU/cent\nSolomon: KU/pred\nSolon: UU/cent\nAsabiyya: KK/subj"
+    },
+    {
+      "id": "cmt-0-451-1771910115845",
+      "type": "text",
+      "x": 800,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=15 t=451\n0/7 faces\nMetatron: KU/pred\nSolomon: KU/pred\nSolon: UU/cent\nAsabiyya: KK/subj"
+    },
+    {
+      "id": "cmt-0-494-1771910115888",
+      "type": "text",
+      "x": 800,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=16 t=494\n0/7 faces\nMetatron: KU/pred\nSolomon: KU/pred\nSolon: UU/cent\nAsabiyya: KK/subj"
+    },
+    {
+      "id": "cmt-0-541-1771910115935",
+      "type": "text",
+      "x": 1240,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=17 t=541\n1/7 faces\nMetatron: KU/pred\nSolomon: KU/pred\nSolon: UU/cent\nAsabiyya: UK/obje"
+    },
+    {
+      "id": "cmt-0-577-1771910115971",
+      "type": "text",
+      "x": 1240,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=18 t=577\n2/7 faces\nMetatron: KU/pred\nSolomon: KU/pred\nSolon: KU/pred\nAsabiyya: UK/obje"
+    },
+    {
+      "id": "cmt-0-587-1771910115981",
+      "type": "text",
+      "x": 1460,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=19 t=587\n2/7 faces\nMetatron: KU/pred\nSolomon: KK/subj\nSolon: KU/pred\nAsabiyya: UK/obje"
+    },
+    {
+      "id": "cmt-0-631-1771910116025",
+      "type": "text",
+      "x": 1680,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=20 t=631\n1/7 faces\nMetatron: KK/subj\nSolomon: KK/subj\nSolon: KU/pred\nAsabiyya: UK/obje"
+    },
+    {
+      "id": "cmt-0-674-1771910116068",
+      "type": "text",
+      "x": 1680,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "2",
+      "text": "**face_eval** lc=21 t=674\n1/7 faces\nMetatron: KK/subj\nSolomon: KK/subj\nSolon: KU/pred\nAsabiyya: UK/obje"
+    },
+    {
+      "id": "cmt-0-719-1771910116113",
+      "type": "text",
+      "x": 1900,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "4",
+      "text": "**sync** lc=22 t=719\n1/7 faces\nMetatron: KK/subj\nSolomon: KK/subj\nSolon: KU/pred\nAsabiyya: UK/obje"
+    },
+    {
+      "id": "prj-0-719",
+      "type": "text",
+      "x": -1400,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "6",
+      "text": "**projection** lc=23 t=0\n0/7 faces\n"
+    },
+    {
+      "id": "cmt-0-2000-1771910117394",
+      "type": "text",
+      "x": 8280,
+      "y": -90,
+      "width": 200,
+      "height": 90,
+      "color": "4",
+      "text": "**sync** lc=24 t=2000\n1/7 faces\nMetatron: KK/subj\nSolomon: KK/subj\nSolon: KU/pred\nAsabiyya: UK/obje"
+    },
+    {
+      "id": "prj-0-2000",
+      "type": "text",
+      "x": -1400,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "6",
+      "text": "**projection** lc=25 t=0\n0/7 faces\n"
+    },
+    {
+      "id": "cmt-0-3000-1771910118394",
+      "type": "text",
+      "x": 13120,
+      "y": 20,
+      "width": 200,
+      "height": 90,
+      "color": "4",
+      "text": "**sync** lc=26 t=3000\n1/7 faces\nMetatron: KK/subj\nSolomon: KK/subj\nSolon: KU/pred\nAsabiyya: UK/obje"
+    },
+    {
+      "id": "prj-0-3000",
+      "type": "text",
+      "x": -1400,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "6",
+      "text": "**projection** lc=27 t=0\n0/7 faces\n"
+    },
+    {
+      "id": "cmt-0-5000-1771910120394",
+      "type": "text",
+      "x": 23020,
+      "y": 130,
+      "width": 200,
+      "height": 90,
+      "color": "4",
+      "text": "**sync** lc=28 t=5000\n1/7 faces\nMetatron: KK/subj\nSolomon: KK/subj\nSolon: KU/pred\nAsabiyya: UK/obje"
+    },
+    {
+      "id": "prj-0-5000",
+      "type": "text",
+      "x": -1400,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "6",
+      "text": "**projection** lc=29 t=0\n0/7 faces\n"
+    },
+    {
+      "id": "syn-0-1771910120394",
+      "type": "text",
+      "x": -1400,
+      "y": -200,
+      "width": 200,
+      "height": 90,
+      "color": "4",
+      "text": "**sync** lc=30 t=0\n0/7 faces\n"
+    }
+  ],
+  "edges": [
+    {
+      "id": "chain-prj-0-0",
+      "fromNode": "0x6794828acb0b22e1793a0aa655ed79540e95e987e8cd526d69f9088a6fee9aac",
+      "toNode": "prj-0-0",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "projection"
+    },
+    {
+      "id": "chain-cmt-0-1-1771910115395",
+      "fromNode": "0xb084c15665fbd3922f4a8a47746d79b29800e5c8decd89241775d26d7dc838c8",
+      "toNode": "cmt-0-1-1771910115395",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-37-1771910115431",
+      "fromNode": "0x86539cc50b9214625dd9b2dbf2f6830d7a497ca8a984f5635397277b4db037db",
+      "toNode": "cmt-0-37-1771910115431",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-47-1771910115441",
+      "fromNode": "0x384ca4803eac94614be40338f1de39bb9cb5b54e6980ccbe6ed458f78f0c5892",
+      "toNode": "cmt-0-47-1771910115441",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-91-1771910115485",
+      "fromNode": "0x91e5fcef4ea08f9bc1ad8f43c0a4c50b02d28c34a0f088e540b279f298f36128",
+      "toNode": "cmt-0-91-1771910115485",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-134-1771910115528",
+      "fromNode": "0x76ba03d990faf0154d57e6d57464b87e9c0b792c197f8c549f641a4b26381654",
+      "toNode": "cmt-0-134-1771910115528",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-181-1771910115575",
+      "fromNode": "0xc8706177719a6da360cbbddb2943d8039de092d704989f8c590c4cbb5d8cd775",
+      "toNode": "cmt-0-181-1771910115575",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-217-1771910115611",
+      "fromNode": "0xd82006acbd2a9eb84c81b1271a3044314c5568464f13e9d16de1769bb8aa4dd3",
+      "toNode": "cmt-0-217-1771910115611",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-227-1771910115621",
+      "fromNode": "0x14a8949ae3d1b7cc4df70f50d1df5c5a72ae2e432b60c4b66d1efcebf0c502dd",
+      "toNode": "cmt-0-227-1771910115621",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-271-1771910115665",
+      "fromNode": "0x1f8306a9549eb0446645d6520840f0c850ed915fadd71269966f444b03a27911",
+      "toNode": "cmt-0-271-1771910115665",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-314-1771910115708",
+      "fromNode": "0x63c5be8ab3e5ed82dd6bd23e41a5576d047183eb224070643fc953da19127ff4",
+      "toNode": "cmt-0-314-1771910115708",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-361-1771910115755",
+      "fromNode": "0xd156c18dd2d94836c9ccff802e6683cb6c1afe60fc903b3d951751ca22f03149",
+      "toNode": "cmt-0-361-1771910115755",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-397-1771910115791",
+      "fromNode": "0x5d5e56baf0408bd30a64d52ceecf5af1f9d058096a6c82ad712ae1f2865f18b5",
+      "toNode": "cmt-0-397-1771910115791",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-407-1771910115801",
+      "fromNode": "0x3a20e1e9c93102c542ff3af95ed569dec7aaa0aff66fbb51170ae2e4548bbfbb",
+      "toNode": "cmt-0-407-1771910115801",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-451-1771910115845",
+      "fromNode": "0x9995007dbf9f94cb4318c7f697b1d583ed1b302ae412b5580ce0b867b427df6c",
+      "toNode": "cmt-0-451-1771910115845",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-494-1771910115888",
+      "fromNode": "0x853b6ff42df8e01094358504f4b34bec4109115288dbec8dc7f309a8c584a788",
+      "toNode": "cmt-0-494-1771910115888",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-541-1771910115935",
+      "fromNode": "0x16268e317f6df2b5f28c2e7587f1d7b6acb20b1254460d0415a7443edebdd3fa",
+      "toNode": "cmt-0-541-1771910115935",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-577-1771910115971",
+      "fromNode": "0x8c89b73fbd1c3e98556a9cada445403f9da590e58b18fe16103961448924efd9",
+      "toNode": "cmt-0-577-1771910115971",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-587-1771910115981",
+      "fromNode": "0xed37a4e81482682a1c70350b9e452bfba146099bed8f3d46257bc5f1d86f82b8",
+      "toNode": "cmt-0-587-1771910115981",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-631-1771910116025",
+      "fromNode": "0x68535f5091eabae1822ca5e31a91aa9dd92bc499d1d9609f0280657c73194860",
+      "toNode": "cmt-0-631-1771910116025",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-674-1771910116068",
+      "fromNode": "0x9271e34c779db3516faca5122b3bc49c60e067f7be6dab52518f20d8299b6e4d",
+      "toNode": "cmt-0-674-1771910116068",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "face_eval"
+    },
+    {
+      "id": "chain-cmt-0-719-1771910116113",
+      "fromNode": "0x596d50efcad9f1d7340f1a83b9462bf2938a9fd5bd3949aad1ffdd4270614efd",
+      "toNode": "cmt-0-719-1771910116113",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "sync"
+    },
+    {
+      "id": "chain-prj-0-719",
+      "fromNode": "0xb396336d9c3494ec178f32338553e4129c1dd1438b6ab749565649f89cfee89a",
+      "toNode": "prj-0-719",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "projection"
+    },
+    {
+      "id": "chain-cmt-0-2000-1771910117394",
+      "fromNode": "0x6dc2dd1fb35411faa4a7a977ad28ac5e42e6b4547d384303a48a36fe5c638804",
+      "toNode": "cmt-0-2000-1771910117394",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "sync"
+    },
+    {
+      "id": "chain-prj-0-2000",
+      "fromNode": "0xcec3f86a0aa0c84d88f17f3e13419624e9b953a4b5b41331ad30d63859b53b63",
+      "toNode": "prj-0-2000",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "projection"
+    },
+    {
+      "id": "chain-cmt-0-3000-1771910118394",
+      "fromNode": "0x7d5b5defe578a1140a24c37c8c101d97fd43fbef3fcf350d828141919615bbe0",
+      "toNode": "cmt-0-3000-1771910118394",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "sync"
+    },
+    {
+      "id": "chain-prj-0-3000",
+      "fromNode": "0x3802dfae7869ae636aec3c64a32374e43e994c68f24dc018abb6cc24770ab44b",
+      "toNode": "prj-0-3000",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "projection"
+    },
+    {
+      "id": "chain-cmt-0-5000-1771910120394",
+      "fromNode": "0x94595f23b2edde6b0b7858ea122d2c49dc41d7dfde4f95192cef13fe3b509c24",
+      "toNode": "cmt-0-5000-1771910120394",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "sync"
+    },
+    {
+      "id": "chain-prj-0-5000",
+      "fromNode": "0x278f196f0ce1f450be8ead7b141d6d9a98ccc7ca582ee4187ae3ac3d5827b0a6",
+      "toNode": "prj-0-5000",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "projection"
+    },
+    {
+      "id": "chain-syn-0-1771910120394",
+      "fromNode": "0x24b96dc349dba59abec8f7eaf4e5b03e9250ba59efc250742354424c959aa73d",
+      "toNode": "syn-0-1771910120394",
+      "color": "5",
+      "fromEnd": "none",
+      "toEnd": "arrow",
+      "label": "sync"
+    }
+  ]
+}

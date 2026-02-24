@@ -1,0 +1,25 @@
+{
+  "short_name": "WESIRI",
+  "name": "WESIRI — Federated Light Protocol Modem",
+  "description": "A universal coordinate system for meaning and computable semantics.",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "./icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./wesiri-modem-full-calibrated-autoqr.html",
+  "scope": "./",
+  "background_color": "#080706",
+  "display": "standalone",
+  "theme_color": "#c9b99a",
+  "orientation": "landscape",
+  "categories": ["productivity", "utilities"],
+  "prefer_related_applications": false
+}

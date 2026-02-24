@@ -1,0 +1,2598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#c9b99a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>WESIRI — Federated Light Protocol</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap');
+
+:root {
+  --bg:       #080706;
+  --bg1:      #0e0c0a;
+  --bg2:      #141210;
+  --gold:     #c9b99a;
+  --gold2:    #8a7860;
+  --dim:      #3a3530;
+  --dimmer:   #1e1c18;
+  --text:     #e8e4dc;
+  --mono:     'Space Mono', monospace;
+  --serif:    'Cormorant Garamond', Georgia, serif;
+  --red:      #ff3028; --orange: #ff9030; --yellow: #ffe048;
+  --green:    #40d048; --blue:   #3090ff; --indigo: #5048d8; --violet: #8830e8;
+  --white:    #ffffff;
+  --kk: #00ff44; --ku: #ffee00; --uk: #ff8800; --uu: #4455ff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11px;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── LAYOUT ── */
+#app {
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  grid-template-rows: 48px 1fr 200px;
+  height: 100vh;
+  gap: 1px;
+  background: var(--dim);
+}
+
+header {
+  grid-column: 1 / -1;
+  background: var(--bg1);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 24px;
+  border-bottom: 1px solid var(--dim);
+}
+
+header h1 {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--gold);
+  letter-spacing: 4px;
+}
+
+header .status-bar {
+  display: flex;
+  gap: 16px;
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--gold2);
+  letter-spacing: 1px;
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+/* ── PANELS ── */
+.panel {
+  background: var(--bg1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-title {
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: var(--gold2);
+  padding: 10px 14px 6px;
+  border-bottom: 1px solid var(--dimmer);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--dim) transparent;
+}
+
+/* ── CENTRE CANVAS ── */
+#centre {
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  overflow: hidden;
+}
+
+#main-canvas-wrap {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── LIGHT RINGS SVG ── */
+#rings-svg {
+  width: min(480px, 90%);
+  height: min(480px, 90%);
+}
+
+/* LED dots */
+.led { transition: fill 0.12s, r 0.12s, filter 0.12s; cursor: pointer; }
+.led:hover { filter: brightness(1.8); }
+.led.active { filter: drop-shadow(0 0 4px currentColor); }
+
+/* Fano lines */
+.fano-line-svg { stroke: var(--dim); stroke-width: 1.5; fill: none; opacity: 0.4; transition: stroke 0.2s, opacity 0.2s; }
+.fano-line-svg.lit { opacity: 1; stroke-width: 2.5; }
+
+/* ── BOTTOM BAR ── */
+#bottom {
+  grid-column: 1 / -1;
+  background: var(--bg1);
+  border-top: 1px solid var(--dim);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--dim);
+}
+
+.bottom-cell {
+  background: var(--bg1);
+  padding: 8px 14px;
+  overflow: hidden;
+}
+
+.bottom-cell-title {
+  font-size: 7px;
+  letter-spacing: 2px;
+  color: var(--gold2);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ── NDJSON STREAM ── */
+#stream-log {
+  font-size: 8px;
+  line-height: 1.6;
+  color: var(--gold2);
+  overflow-y: auto;
+  height: 100%;
+  max-height: 160px;
+}
+
+.stream-line {
+  border-left: 2px solid var(--dimmer);
+  padding-left: 6px;
+  margin-bottom: 2px;
+  animation: fadein 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stream-line.commit  { border-color: var(--kk); color: #88ffaa; }
+.stream-line.sync    { border-color: var(--ku); color: #ffee88; }
+.stream-line.face_eval { border-color: var(--uk); color: #ffaa66; }
+.stream-line.projection { border-color: var(--uu); color: #8899ff; }
+.stream-line.quarantined { border-color: var(--red); color: #ff9090; }
+
+@keyframes fadein { from { opacity:0; transform: translateX(-4px); } to { opacity:1; transform: translateX(0); } }
+
+/* ── EPISTEMIC SQUARE ── */
+#epistemic-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#ep-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── SPO TABLE ── */
+.spo-row {
+  display: grid;
+  grid-template-columns: 70px 24px 50px 60px;
+  gap: 4px;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--dimmer);
+  align-items: center;
+}
+
+.spo-name { color: var(--gold); font-size: 9px; }
+.spo-quad {
+  font-size: 7px;
+  font-weight: bold;
+  text-align: center;
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+.spo-quad.KK { background: rgba(0,255,68,.15); color: var(--kk); }
+.spo-quad.KU { background: rgba(255,238,0,.15); color: var(--ku); }
+.spo-quad.UK { background: rgba(255,136,0,.15); color: var(--uk); }
+.spo-quad.UU { background: rgba(68,85,255,.15); color: var(--uu); }
+.spo-role { font-size: 8px; color: var(--gold2); }
+.spo-repl { font-size: 7px; color: var(--dim); font-style: italic; }
+
+/* ── FACE INVARIANTS ── */
+.face-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--dimmer);
+}
+.face-id { font-size: 9px; color: var(--gold); width: 20px; }
+.face-pts { font-size: 8px; color: var(--gold2); width: 60px; }
+.face-status {
+  font-size: 7px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-weight: bold;
+}
+.face-status.pass { background: rgba(0,255,68,.15); color: var(--kk); }
+.face-status.fail { background: rgba(255,48,40,.12); color: #ff6660; }
+.face-inv { font-size: 7px; color: var(--dim); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── CENTROID METER ── */
+.centroid-bar-wrap {
+  margin: 8px 0;
+}
+.centroid-bar-bg {
+  height: 4px;
+  background: var(--dimmer);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 4px 0;
+}
+.centroid-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--kk), var(--ku));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.centroid-val { font-size: 11px; color: var(--gold); font-family: var(--serif); }
+
+/* ── DOCUMENT GRAPH ── */
+.doc-node {
+  padding: 5px 8px;
+  border: 1px solid var(--dimmer);
+  border-radius: 3px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  font-size: 8px;
+}
+.doc-node:hover { border-color: var(--gold2); background: var(--dimmer); }
+.doc-node.active { border-color: var(--gold); }
+.doc-node-hash { color: var(--gold2); font-size: 7px; margin-top: 2px; }
+.doc-node-type { color: var(--kk); font-size: 7px; }
+
+/* ── CONTROLS ── */
+.ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.ctrl-label { font-size: 8px; color: var(--gold2); width: 80px; }
+
+input[type=range] {
+  -webkit-appearance: none;
+  height: 2px;
+  background: var(--dim);
+  border-radius: 1px;
+  flex: 1;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+}
+
+.btn {
+  font-family: var(--mono);
+  font-size: 8px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--dim);
+  color: var(--gold2);
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn:hover { border-color: var(--gold); color: var(--gold); }
+.btn.active { border-color: var(--kk); color: var(--kk); }
+
+/* ── 16x16 WINDOW ── */
+#window-grid {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 1px;
+  width: 100%;
+}
+.win-cell {
+  aspect-ratio: 1;
+  border-radius: 1px;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+/* ── NDJSON INGEST ── */
+#ndjson-paste {
+  width: 100%;
+  height: 62px;
+  resize: vertical;
+  background: var(--bg2);
+  border: 1px solid var(--dim);
+  color: var(--gold2);
+  font-family: var(--mono);
+  font-size: 8px;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+/* ── QR HASH DISPLAY ── */
+#qr-ring {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+#basis-hash-text {
+  font-size: 7px;
+  color: var(--gold2);
+  word-break: break-all;
+  text-align: center;
+  letter-spacing: 0.5px;
+  line-height: 1.6;
+}
+
+/* ── ESP32 STATUS ── */
+.esp-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--dimmer);
+}
+.esp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.esp-id { font-size: 8px; color: var(--gold2); flex: 1; }
+.esp-state { font-size: 7px; color: var(--dim); }
+.esp-metric { font-size: 8px; font-weight: bold; }
+
+/* Sabbath glow */
+body.sabbath { animation: sabbath-pulse 1s ease-in-out infinite alternate; }
+@keyframes sabbath-pulse {
+  from { background: #080706; }
+  to   { background: #0a0e0a; }
+}
+
+/* spin animation for epistemic square */
+@keyframes spin-ring {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <h1>WESIRI</h1>
+    <span style="font-size:8px;color:var(--gold2);letter-spacing:2px">FEDERATED LIGHT PROTOCOL</span>
+    <div class="status-bar">
+      <span><span class="status-dot" style="background:var(--kk)"></span>BASIS</span>
+      <span id="hdr-lc">lc:0</span>
+      <span id="hdr-tick">tick:0</span>
+      <span id="hdr-angle">0.0°</span>
+      <span id="hdr-metric">Φ:0.00</span>
+      <span id="hdr-sabbath" style="color:var(--dim)">SABBATH:—</span>
+    </div>
+  </header>
+
+  <!-- LEFT: Document Graph + Controls -->
+  <div class="panel">
+    <div class="panel-title">Document Graph · Federated SVGs</div>
+    <div class="panel-body">
+
+      <div style="margin-bottom:10px">
+        <div class="ctrl-row">
+          <span class="ctrl-label">spin speed</span>
+          <input type="range" id="spin-speed" min="0.1" max="3" step="0.1" value="0.5">
+          <span id="spin-val" style="font-size:8px;color:var(--gold);width:28px">0.5°</span>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">auto-rotate</span>
+          <button class="btn active" id="btn-rotate" onclick="toggleRotate()">ON</button>
+          <button class="btn" id="btn-sabbath" onclick="seekSabbath()">SEEK Ω</button>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">pattern</span>
+          <button class="btn" onclick="runPattern('tetrahedral_sweep')">SWEEP</button>
+          <button class="btn" onclick="runPattern('fano_line_cycle')">LINES</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:8px;font-size:7px;color:var(--dim);letter-spacing:1px">SVG DOCUMENT NODES</div>
+      <div id="doc-graph"></div>
+
+      <div style="margin-top:24px; border-top:1px solid var(--dim); padding-top:12px;">
+        <div class="panel-title" style="margin-bottom:8px">⏺️ MODULATOR · winkNLP → SPO → Fano</div>
+
+        <textarea id="mod-text-input" rows="3" style="width:100%; background:var(--bg2); border:1px solid var(--dim); color:var(--gold); font-family:var(--mono); font-size:9px; padding:6px; margin-bottom:8px;">The king granted freedom to his people.</textarea>
+
+        <div style="display:flex; gap:4px; margin-bottom:8px;">
+          <button class="btn" id="mod-extract-spo" style="flex:1">1️⃣ EXTRACT SPO</button>
+          <button class="btn" id="mod-select-line" style="flex:1">2️⃣ MAP TO FANO</button>
+          <button class="btn" id="mod-transmit" style="flex:1; color:var(--kk)">3️⃣ TRANSMIT</button>
+        </div>
+
+        <div id="mod-spo-preview" style="font-size:8px; background:var(--bg2); padding:6px; border-left:2px solid var(--dim); margin-bottom:8px;">
+          <div style="color:var(--gold2); margin-bottom:4px;">extracted triples:</div>
+          <div id="mod-spo-rows"></div>
+        </div>
+
+        <div id="mod-carrier" style="font-size:8px; background:var(--bg2); padding:6px; border-left:2px solid var(--dim);">
+          <div style="color:var(--gold2);">carrier: <span id="mod-fano-line">—</span></div>
+          <div style="color:var(--gold2);">quadrants: <span id="mod-quadrants">—</span></div>
+          <div style="color:var(--gold2);">baud cycle: <span id="mod-baud">0/720</span></div>
+        </div>
+      </div>
+
+
+      <div style="margin-top:12px;margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">ESP32 LATTICE</div>
+      <div id="esp-list"></div>
+
+      <div style="margin-top:12px;margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">NDJSON COMMIT LOG</div>
+      <div id="stream-log"></div>
+    </div>
+  </div>
+
+  <!-- CENTRE: Main light ring canvas -->
+  <div id="centre">
+    <div id="main-canvas-wrap">
+      <svg id="rings-svg" viewBox="-300 -300 600 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="glow-sm">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="glow-md">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="glow-lg">
+            <feGaussianBlur stdDeviation="8" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Fano lines (drawn first, below LEDs) -->
+        <g id="svg-fano-lines"></g>
+
+        <!-- Epistemic square overlay (rotating) -->
+        <g id="ep-square-overlay" opacity="0.15">
+          <line x1="-240" y1="0" x2="240" y2="0" stroke="var(--gold2)" stroke-width="0.5"/>
+          <line x1="0" y1="-240" x2="0" y2="240" stroke="var(--gold2)" stroke-width="0.5"/>
+        </g>
+
+        <!-- Ring groups -->
+        <g id="svg-rings"></g>
+
+        <!-- 16x16 window overlay (outermost) -->
+        <g id="svg-window" opacity="0.4" transform="rotate(0)"></g>
+
+        <!-- Center LED -->
+        <circle id="led-center" cx="0" cy="0" r="8" fill="var(--white)" class="led"
+                data-path="m/240'/0'/0'/8'" data-fano="8"
+                filter="url(#glow-md)"/>
+        <text x="0" y="16" text-anchor="middle" fill="var(--gold2)"
+              style="font-family:var(--mono);font-size:7px">genesis·gate</text>
+      </svg>
+    </div>
+
+    <!-- Active line indicator -->
+    <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+                display:flex;gap:6px;align-items:center">
+      <span style="font-size:7px;color:var(--gold2);letter-spacing:1px">ACTIVE LINE</span>
+      <div id="active-line-display" style="font-size:10px;color:var(--gold);font-family:var(--serif)">—</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Epistemic square + SPO state -->
+  <div class="panel">
+    <div class="panel-title">Epistemic State · Rumsfeldian</div>
+    <div class="panel-body">
+
+      <!-- Mini epistemic square -->
+      <svg id="ep-svg" viewBox="0 0 200 200" style="width:100%;height:160px;margin-bottom:8px">
+        <rect width="100" height="100" x="100" y="100" fill="rgba(0,255,68,0.08)"/>
+        <rect width="100" height="100" x="0"   y="100" fill="rgba(255,238,0,0.08)"/>
+        <rect width="100" height="100" x="100" y="0"   fill="rgba(255,136,0,0.08)"/>
+        <rect width="100" height="100" x="0"   y="0"   fill="rgba(68,85,255,0.08)"/>
+        <line x1="100" y1="0" x2="100" y2="200" stroke="var(--dim)" stroke-width="1"/>
+        <line x1="0" y1="100" x2="200" y2="100" stroke="var(--dim)" stroke-width="1"/>
+        <text x="150" y="195" text-anchor="middle" fill="var(--kk)" style="font-size:7px;font-family:var(--mono)">KK</text>
+        <text x="50"  y="195" text-anchor="middle" fill="var(--ku)" style="font-size:7px;font-family:var(--mono)">KU</text>
+        <text x="150" y="12"  text-anchor="middle" fill="var(--uk)" style="font-size:7px;font-family:var(--mono)">UK</text>
+        <text x="50"  y="12"  text-anchor="middle" fill="var(--uu)" style="font-size:7px;font-family:var(--mono)">UU</text>
+        <g id="ep-points-g"></g>
+        <circle cx="100" cy="100" r="3" fill="var(--white)" opacity="0.6"/>
+      </svg>
+
+      <!-- SPO table -->
+      <div style="margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">SPO CONTEXT</div>
+      <div id="spo-table"></div>
+
+      <!-- Centroid -->
+      <div style="margin-top:10px;margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">CENTROID · STOP METRIC</div>
+      <div class="centroid-bar-wrap">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span class="centroid-val" id="cent-metric">0.00</span>
+          <span id="cent-sabbath" style="font-size:9px;color:var(--dim)">Φ</span>
+        </div>
+        <div class="centroid-bar-bg">
+          <div class="centroid-bar-fill" id="cent-bar" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Face invariants -->
+      <div style="margin-top:10px;margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">FACE INVARIANTS · L1–L7</div>
+      <div id="face-table"></div>
+
+      <div style="margin-top:24px; border-top:1px solid var(--dim); padding-top:12px;">
+        <div class="panel-title" style="margin-bottom:8px">📡 DEMODULATOR · Camera/Serial → Quadrants → Fano</div>
+
+        <div style="display:flex; gap:4px; margin-bottom:8px;">
+          <button class="btn" id="dem-camera-start">📷 START CAMERA</button>
+          <button class="btn" id="dem-serial-start">🔌 CONNECT SERIAL</button>
+          <button class="btn" id="dem-decode">🔍 DECODE FRAME</button>
+        </div>
+
+        <video id="dem-camera-preview" style="width:100%; height:120px; background:var(--bg2); border:1px solid var(--dim); margin-bottom:8px; display:none;" autoplay playsinline></video>
+
+        <div id="dem-serial-console" style="height:60px; background:var(--bg2); border:1px solid var(--dim); font-size:7px; padding:4px; overflow-y:auto; margin-bottom:8px; display:none;"></div>
+
+        <div style="font-size:8px; background:var(--bg2); padding:6px; border-left:2px solid var(--dim); margin-bottom:8px;">
+          <div style="color:var(--gold2); margin-bottom:4px;">detected quadrants:</div>
+          <div id="dem-quadrants" style="display:grid; grid-template-columns:repeat(4,1fr); gap:2px;"></div>
+        </div>
+
+        <div id="dem-result" style="font-size:8px; background:var(--bg2); padding:6px; border-left:2px solid var(--kk);">
+          <div>inferred line: <span id="dem-line" style="color:var(--kk)">—</span></div>
+          <div>confidence: <span id="dem-confidence" style="color:var(--ku)">—</span></div>
+          <div>reconstructed SPO: <span id="dem-spo" style="color:var(--uk)">—</span></div>
+        </div>
+      </div>
+
+
+      <!-- Basis hash -->
+      <div style="margin-top:10px;margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">BASIS · HASH</div>
+      <div id="basis-hash-text"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM: 16x16 window | NDJSON schema | WordNet basis | SPO narrative -->
+  <div id="bottom">
+    <div class="bottom-cell">
+      <div class="bottom-cell-title">🟦 16×16 WHITEBOARD · SAB (rows 12–15 = UU/meta, col = floor(w*16))</div>
+      <div id="window-grid"></div>
+      <div style="display:flex; gap:4px; margin-top:6px;">
+        <button class="btn" id="wb-emit-call" style="flex:1">EMIT SYNSET_CALL (w=0.125)</button>
+        <button class="btn" id="wb-emit-reply" style="flex:1">EMIT SYNSET_REPLY (faces_passed=3)</button>
+      </div>
+      <div id="wb16-status" style="margin-top:6px; font-size:7px; color:var(--dim); letter-spacing:0.5px;">
+        projection: —
+      </div>
+    </div>
+
+    <div class="bottom-cell">
+      <div class="bottom-cell-title">WordNet Basis · Signed SPO Simplex</div>
+      <div id="wordnet-panel"></div>
+    </div>
+
+    <div class="bottom-cell">
+      <div class="bottom-cell-title">NDJSON CommitEvent · Schema</div>
+      <div id="schema-panel" style="font-size:7px;color:var(--gold2);line-height:1.7;overflow-y:auto;max-height:150px"></div>
+      <div style="margin-top:8px; display:flex; gap:4px;">
+        <button class="btn" id="ndjson-ingest" style="flex:1">INGEST NDJSON</button>
+        <button class="btn" id="ndjson-clear" style="flex:1">CLEAR</button>
+      </div>
+      <textarea id="ndjson-paste" placeholder="Paste NDJSON here (one JSON object per line)."></textarea>
+    <div style="margin-top:10px; border-top:1px solid var(--dim); padding-top:8px;">
+      <div class="bottom-cell-title" style="font-size:10px; margin-bottom:6px;">🔳 BASIS HANDSHAKE · QR</div>
+      <canvas id="basis-qr" width="160" height="160" style="width:100%; max-width:180px; background:var(--bg2); border:1px solid var(--dim); border-radius:6px;"></canvas>
+      <div id="basis-handshake-text" style="margin-top:6px; font-size:7px; color:var(--gold2); word-break:break-all; line-height:1.5;"></div>
+      <div style="display:flex; gap:4px; margin-top:6px;">
+        <button class="btn" id="btn-handshake-emit" style="flex:1">EMIT</button>
+        <button class="btn" id="btn-handshake-copy" style="flex:1">COPY</button>
+        <button class="btn" id="btn-handshake-scan" style="flex:1">SCAN</button>
+      </div>
+      <div id="basis-handshake-status" style="margin-top:6px; font-size:7px; color:var(--dim);"></div>
+    </div>
+
+    </div>
+
+    <div class="bottom-cell">
+      <div class="bottom-cell-title">🔏 SIGNER · Web3 Anchor</div>
+      <div style="font-size:8px;">
+        <div style="display:flex; align-items:center; gap:4px; margin-bottom:6px;">
+          <span class="status-dot" style="background:var(--dim);" id="signer-status-dot"></span>
+          <span id="signer-address" style="color:var(--gold2);">not connected</span>
+        </div>
+        <button class="btn" id="signer-connect" style="width:100%; margin-bottom:4px;">CONNECT WALLET</button>
+        <div style="display:flex; gap:2px; margin-bottom:6px;">
+          <button class="btn" id="signer-sign" style="flex:1">SIGN</button>
+          <button class="btn" id="signer-anchor" style="flex:1">ANCHOR</button>
+        </div>
+        <div style="font-size:7px; color:var(--dim); word-break:break-all;" id="signer-last-sig"></div>
+      </div>
+    </div>
+
+    <div class="bottom-cell">
+      <div class="bottom-cell-title">📡 BROADCAST · WebRTC</div>
+      <div style="font-size:8px;">
+        <div style="display:flex; align-items:center; gap:4px; margin-bottom:6px;">
+          <span class="status-dot" style="background:var(--dim);" id="rtc-status-dot"></span>
+          <span id="rtc-peers" style="color:var(--gold2);">0 peers</span>
+        </div>
+        <button class="btn" id="rtc-start" style="width:100%; margin-bottom:4px;">START PEER CONNECTION</button>
+        <button class="btn" id="rtc-broadcast" style="width:100%;">BROADCAST LAST COMMIT</button>
+        <div style="margin-top:6px; font-size:7px; color:var(--dim);" id="rtc-log"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════
+
+const FULL_CYCLE = 720;  // ticks per full 360° cycle (0.5° per tick)
+const SPIN_SPEED = 0.5;  // degrees per tick
+
+
+// ─────────────────────────────────────────────────────────────
+// winkNLP (optional) — browser ESM loader (falls back to v0 heuristic)
+// Loads from esm.sh; if offline or blocked, extraction still works.
+// ─────────────────────────────────────────────────────────────
+window.__wink = { ready: false, nlp: null, its: null, as: null, error: null };
+
+async function initWinkNLP() {
+  try {
+    // You can pin versions if you want strict reproducibility.
+    const winkMod = await import('https://esm.sh/wink-nlp');
+    const modelMod = await import('https://esm.sh/wink-eng-lite-web-model');
+    const winkNLP = winkMod.default || winkMod;
+    const model = modelMod.default || modelMod;
+
+    const nlp = winkNLP(model);
+    window.__wink = { ready: true, nlp, its: nlp.its, as: nlp.as, error: null };
+
+    const statusEl = document.getElementById('basis-handshake-status');
+    if (statusEl) statusEl.textContent = (statusEl.textContent || '') + ' · winkNLP ready';
+  } catch (e) {
+    window.__wink.error = e;
+    // Silent fallback: heuristic extraction still works.
+  }
+}
+initWinkNLP();
+
+const FANO_POINTS = [
+  { id:1, name:'Metatron',  baseX: 0.15, baseY: 0.15, color:'#ff3028', hue:0   },
+  { id:2, name:'Solomon',   baseX: 0.35, baseY: 0.15, color:'#ff9030', hue:30  },
+  { id:3, name:'Solon',     baseX:-0.05, baseY: 0.15, color:'#ffe048', hue:60  },
+  { id:4, name:'Asabiyyah', baseX: 0.0,  baseY:-0.25, color:'#40d048', hue:120 },
+  { id:5, name:'Enoch',     baseX:-0.35, baseY: 0.15, color:'#3090ff', hue:240 },
+  { id:6, name:'Speaker',   baseX: 0.35, baseY: 0.15, color:'#5048d8', hue:270 },
+  { id:7, name:'Genesis',   baseX: 0.0,  baseY: 0.35, color:'#8830e8', hue:300 },
+];
+
+const FANO_LINES = [
+  { id:'L1', points:[1,2,4] },
+  { id:'L2', points:[1,3,5] },
+  { id:'L3', points:[1,6,7] },
+  { id:'L4', points:[2,3,6] },
+  { id:'L5', points:[2,5,7] },
+  { id:'L6', points:[3,4,6] },
+  { id:'L7', points:[4,5,7] },
+];
+
+const QUADRANT_MAP = {
+  KK: { spo:'subject',   role:'Intent',    golden:'freedom',  repl:'READ',  io:'stdin',  color:'#00ff44' },
+  KU: { spo:'predicate', role:'Event',     golden:'grace',    repl:'EVAL',  io:'stdout', color:'#ffee00' },
+  UK: { spo:'object',    role:'Incidence', golden:'maybe',    repl:'PRINT', io:'port',   color:'#ff8800' },
+  UU: { spo:'centroid',  role:'Stop',      golden:'stop',     repl:'LOOP',  io:'file',   color:'#4455ff' },
+};
+
+// Physical ring layout — from lights.json
+const RINGS = [
+  { r:0,   count:1,  purpose:'center'    },
+  { r:28,  count:8,  purpose:'fano'      },
+  { r:52,  count:12, purpose:'harmonics' },
+  { r:76,  count:16, purpose:'canvas'    },
+  { r:102, count:24, purpose:'rotation'  },
+  { r:130, count:32, purpose:'expansion' },
+  { r:160, count:40, purpose:'h58'       },
+  { r:190, count:48, purpose:'hex'       },
+  { r:222, count:60, purpose:'dodeca'    },
+];
+
+// Hardware layers mapped to protocol layers
+const HW_LAYERS = [
+  { id:'global',   name:'WESIRI 241',    leds:241, purpose:240, color:'#c9b99a', desc:'Full State · Garden Ring' },
+  { id:'local',    name:'7-ring talisman', leds:7, purpose:7,   color:'#ff3028', desc:'Local State · Talisman' },
+  { id:'shared',   name:'16×16 matrix',  leds:256, purpose:256, color:'#3090ff', desc:'Shared State · Window' },
+  { id:'artifact', name:'100px single',  leds:100, purpose:100, color:'#8830e8', desc:'Artifact · SHA360°' },
+];
+
+// SVG documents in the federated graph
+const SVG_DOCS = [
+  { id:'fano-garden-seed-kernel', name:'Seed Kernel',       hash:'0xa1b2c3d4', type:'canonical', color:'#c9b99a' },
+  { id:'fano-with-light-arrays',  name:'Light Arrays',      hash:'0xe5f6a7b8', type:'projection', color:'#3090ff' },
+  { id:'fano-garden',             name:'Garden',            hash:'0xc9d0e1f2', type:'instance',   color:'#40d048' },
+  { id:'epistemic-square',        name:'Epistemic Square',  hash:'0x23a4b5c6', type:'operator',   color:'#ffee00' },
+  { id:'dome-svg',                name:'Dome',              hash:'0x78d9e0f1', type:'projection', color:'#ff9030' },
+];
+
+// Mock ESP32 nodes in the C3 lattice
+const ESP_NODES = [
+  { id:'esp-s3-00', role:'controller', state:'sealed',    metric:1.00, color:'#00ff44' },
+  { id:'esp-c3-01', role:'sensor',     state:'validated', metric:0.71, color:'#ffee00' },
+  { id:'esp-c3-02', role:'sensor',     state:'validated', metric:0.57, color:'#ffee00' },
+  { id:'esp-c3-03', role:'sensor',     state:'pending',   metric:0.28, color:'#ff8800' },
+  { id:'esp-c3-04', role:'sensor',     state:'pending',   metric:0.14, color:'#ff8800' },
+];
+
+// WordNet basis words mapped to golden twelve
+const WORDNET_SIMPLEX = [
+  { word:'Freedom',     face:'agency', synset:'freedom.n.01', depth:4, w:0.25 },
+  { word:'Grace',       face:'ethics', synset:'grace.n.03',   depth:6, w:0.375 },
+  { word:'Yes',         face:'logic',  synset:'yes.n.01',     depth:2, w:0.125 },
+  { word:'Stop',        face:'logic',  synset:'stop.v.01',    depth:5, w:0.3125 },
+  { word:'Love',        face:'ethics', synset:'love.n.01',    depth:7, w:0.4375 },
+  { word:'Sovereignty', face:'agency', synset:'sovereignty.n.01', depth:5, w:0.3125 },
+];
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+
+let state = {
+  angle:       0,
+  spinSpeed:   SPIN_SPEED,
+  autoRotate:  true,
+  lc:          0,
+  prevHash:    null,
+  tick:        0,
+  cycle:       0,
+  quadrants:   {},   // fano_id -> KK|KU|UK|UU
+  ledColors:   {},   // path -> {h,s,v}
+  activeLine:  null,
+  faces:       [],
+  centroid:    { stop_metric:0, closure_ratio:0, sabbath:false, reason:'' },
+  pattern:     null,
+  patternStep: 0,
+  basisHash:   '0x' + Array.from({length:32}, () => Math.floor(Math.random()*256).toString(16).padStart(2,'0')).join(''),
+  sabGrid:     new Uint32Array(256),
+  narratives:  [],
+  whiteboard:  { kind:null, col:null, quadrantKey:null, startedAt:0, expiresAt:0, pulse:false },
+  lastSynsetCallId: null,
+};
+
+// ═══════════════════════════════════════════════════════
+// CRYPTO (lightweight stub — sha256-like via XOR chain)
+// ═══════════════════════════════════════════════════════
+
+
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+function hashStr(s) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = (h * 0x01000193) >>> 0;
+  }
+  return '0x' + h.toString(16).padStart(8,'0') +
+         ((h ^ 0xdeadbeef) >>> 0).toString(16).padStart(8,'0');
+}
+
+// ═══════════════════════════════════════════════════════
+// EPISTEMIC SQUARE MATH (mirrors epistemic-square.js)
+// ═══════════════════════════════════════════════════════
+
+function rotatePoint(p, angleDeg) {
+  const rad  = -angleDeg * Math.PI / 180;
+  const cosA = Math.cos(rad), sinA = Math.sin(rad);
+  return {
+    x: p.baseX * cosA - p.baseY * sinA,
+    y: p.baseX * sinA + p.baseY * cosA,
+  };
+}
+
+function getQuadrant(x, y) {
+  if (x >= 0 && y >= 0) return 'KK';
+  if (x <  0 && y >= 0) return 'KU';
+  if (x >= 0 && y <  0) return 'UK';
+  return 'UU';
+}
+
+function updateQuadrants(angleDeg) {
+  const q = {};
+  FANO_POINTS.forEach(p => {
+    const { x, y } = rotatePoint(p, angleDeg);
+    q[p.id] = getQuadrant(x, y);
+  });
+  return q;
+}
+
+// ═══════════════════════════════════════════════════════
+// FACE EVALUATION
+// ═══════════════════════════════════════════════════════
+
+function evaluateFaces(quads) {
+  return FANO_LINES.map(line => {
+    const qs    = line.points.map(pid => quads[pid]);
+    const roles = qs.map(q => QUADRANT_MAP[q].spo);
+    const u     = new Set(roles);
+    const isSPO = u.has('subject') && u.has('predicate') && u.has('object');
+    const isCoherent = u.size === 1;
+    return {
+      face_id: line.id,
+      vertices: line.points.map(pid => `v${pid}`),
+      invariant_name: isSPO ? 'spo_triple_closure' : isCoherent ? 'coherent_state' : 'partial',
+      status: (isSPO || isCoherent) ? 'pass' : 'fail',
+      quadrants: qs,
+      roles,
+    };
+  });
+}
+
+function computeCentroid(faces) {
+  const pass = faces.filter(f => f.status === 'pass').length;
+  const cr   = pass / 7;
+  return {
+    stop_metric:   cr,
+    closure_ratio: cr,
+    sabbath:       cr === 1.0,
+    reason:        cr === 1.0 ? 'all_invariants_closed' : `incomplete_faces:${pass}/7`,
+    pass,
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+// COMMIT EMISSION
+// ═══════════════════════════════════════════════════════
+
+function emitCommit(type, extra = {}) {
+  const payload = {
+    id:     `cmt-${state.cycle}-${state.tick}-${Date.now()}`,
+    t:      Date.now(),
+    lc:     state.lc++,
+    type,
+    tick:   state.tick,
+    angle:  state.angle.toFixed(2),
+    centroid: state.centroid,
+    faces:  state.faces,
+    basisHash: state.basisHash,
+    prev_hash: state.prevHash,
+    ...extra,
+  };
+  payload.self_hash = hashStr(JSON.stringify(payload));
+  payload.sig       = hashStr('sig:' + payload.self_hash);
+  state.prevHash    = payload.self_hash;
+
+  // Log to stream
+  appendStream(payload);
+
+  // Update SAB
+  FANO_POINTS.forEach(p => {
+    const q   = state.quadrants[p.id] || 'UU';
+    const row = p.id - 1;
+    const col = Math.floor((state.angle % 360) / 360 * 16);
+    const idx = row * 16 + col;
+    state.sabGrid[idx] = p.hue;
+  });
+
+  // Narrative
+  if (type === 'face_eval' || type === 'commit') {
+    buildNarrative(payload);
+  }
+
+  return payload;
+}
+
+// ═══════════════════════════════════════════════════════
+// SVG RING BUILDER
+// ═══════════════════════════════════════════════════════
+
+function buildRings() {
+  const ringsG = document.getElementById('svg-rings');
+  const linesG = document.getElementById('svg-fano-lines');
+  ringsG.innerHTML = '';
+  linesG.innerHTML = '';
+
+  RINGS.forEach((ring, ri) => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.id = `ring-${ri}`;
+
+    if (ri === 0) return; // center handled separately
+
+    for (let li = 0; li < ring.count; li++) {
+      const angleDeg = (li / ring.count) * 360;
+      const angleRad = (angleDeg - 90) * Math.PI / 180;
+      const cx = ring.r * Math.cos(angleRad);
+      const cy = ring.r * Math.sin(angleRad);
+      const fanoId = (li % 7) + 1;
+      const fano   = FANO_POINTS.find(p => p.id === fanoId);
+      const ledR   = ri <= 2 ? 5 : ri <= 4 ? 4 : ri <= 6 ? 3 : 2.5;
+
+      const path = `m/240'/${ri}'/${li}'/${fanoId}'`;
+
+      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx', cx.toFixed(1));
+      c.setAttribute('cy', cy.toFixed(1));
+      c.setAttribute('r',  ledR);
+      c.setAttribute('fill', fano.color);
+      c.setAttribute('opacity', '0.7');
+      c.setAttribute('class','led');
+      c.dataset.path  = path;
+      c.dataset.fano  = fanoId;
+      c.dataset.ring  = ri;
+      c.dataset.led   = li;
+      c.id = `led-r${ri}-l${li}`;
+
+      // Click to highlight fano line
+      c.addEventListener('click', () => highlightFanoLines(fanoId));
+      g.appendChild(c);
+    }
+    ringsG.appendChild(g);
+  });
+
+  // Draw Fano lines using ring-1 positions as anchor points
+  const ring1 = RINGS[1];
+  const ptPos = {};
+  FANO_POINTS.forEach((fp, fi) => {
+    const angleDeg = (fi / 7) * 360;
+    const angleRad = (angleDeg - 90) * Math.PI / 180;
+    ptPos[fp.id] = {
+      x: ring1.r * Math.cos(angleRad),
+      y: ring1.r * Math.sin(angleRad),
+    };
+  });
+
+  FANO_LINES.forEach(line => {
+    const [a,b,c] = line.points.map(pid => ptPos[pid]);
+    const el = document.createElementNS('http://www.w3.org/2000/svg','line');
+    // Draw as triangle centroid-connected lines
+    const cx2 = (a.x+b.x+c.x)/3, cy2 = (a.y+b.y+c.y)/3;
+    // Draw 3 lines from each vertex to centroid
+    line.points.forEach(pid => {
+      const p = ptPos[pid];
+      const seg = document.createElementNS('http://www.w3.org/2000/svg','line');
+      seg.setAttribute('x1', p.x.toFixed(1));
+      seg.setAttribute('y1', p.y.toFixed(1));
+      seg.setAttribute('x2', cx2.toFixed(1));
+      seg.setAttribute('y2', cy2.toFixed(1));
+      seg.setAttribute('class','fano-line-svg');
+      seg.dataset.line = line.id;
+      linesG.appendChild(seg);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// HIGHLIGHT FANO LINES
+// ═══════════════════════════════════════════════════════
+
+function highlightFanoLines(fanoId) {
+  const activeLines = FANO_LINES.filter(l => l.points.includes(fanoId));
+  document.querySelectorAll('.fano-line-svg').forEach(el => {
+    const isActive = activeLines.some(l => l.id === el.dataset.line);
+    el.classList.toggle('lit', isActive);
+    el.style.stroke = isActive
+      ? FANO_POINTS.find(p => p.id === fanoId).color
+      : '';
+  });
+  state.activeLine = activeLines.map(l=>l.id).join(', ');
+  document.getElementById('active-line-display').textContent =
+    state.activeLine || '—';
+}
+
+// ═══════════════════════════════════════════════════════
+// UPDATE LED COLORS FROM QUADRANT STATE
+// ═══════════════════════════════════════════════════════
+
+function updateLEDColors() {
+  document.querySelectorAll('.led[data-fano]').forEach(el => {
+    const fanoId = parseInt(el.dataset.fano);
+    if (!fanoId || fanoId > 7) return;
+    const q     = state.quadrants[fanoId] || 'UU';
+    const qColor = QUADRANT_MAP[q].color;
+    const base   = FANO_POINTS.find(p => p.id === fanoId)?.color || '#ffffff';
+
+    // Blend base color with quadrant color based on metric
+    el.style.fill = q === 'KK' ? base :
+                    q === 'UU' ? '#223' : base;
+    el.style.opacity = q === 'KK' ? '1' : q === 'KU' ? '0.8' : '0.5';
+    if (q === 'KK') el.setAttribute('filter','url(#glow-sm)');
+    else el.removeAttribute('filter');
+  });
+
+  // Center LED reflects sabbath
+  const center = document.getElementById('led-center');
+  if (state.centroid.sabbath) {
+    center.setAttribute('fill','#ffffff');
+    center.setAttribute('filter','url(#glow-lg)');
+    document.body.classList.add('sabbath');
+  } else {
+    center.setAttribute('fill', '#888888');
+    center.setAttribute('filter','url(#glow-md)');
+    document.body.classList.remove('sabbath');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// UPDATE EPISTEMIC SQUARE (mini)
+// ═══════════════════════════════════════════════════════
+
+function updateEpistemicSquare() {
+  const g = document.getElementById('ep-points-g');
+  g.innerHTML = '';
+  FANO_POINTS.forEach(fp => {
+    const pos = rotatePoint(fp, state.angle);
+    const q   = state.quadrants[fp.id] || 'UU';
+    const cx  = 100 + pos.x * 200;
+    const cy  = 100 - pos.y * 200; // SVG y-flip
+    const c   = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', cx.toFixed(1));
+    c.setAttribute('cy', cy.toFixed(1));
+    c.setAttribute('r', '5');
+    c.setAttribute('fill', QUADRANT_MAP[q].color);
+    c.setAttribute('opacity','0.9');
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', cx.toFixed(1));
+    t.setAttribute('y', (cy - 8).toFixed(1));
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('fill', fp.color);
+    t.setAttribute('style','font-size:6px;font-family:monospace');
+    t.textContent = fp.name.slice(0,3);
+    g.appendChild(c);
+    g.appendChild(t);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// UPDATE SPO TABLE
+// ═══════════════════════════════════════════════════════
+
+function updateSPOTable() {
+  const el = document.getElementById('spo-table');
+  el.innerHTML = FANO_POINTS.map(fp => {
+    const q  = state.quadrants[fp.id] || 'UU';
+    const qm = QUADRANT_MAP[q];
+    return `<div class="spo-row">
+      <span class="spo-name" style="color:${fp.color}">${fp.name}</span>
+      <span class="spo-quad ${q}">${q}</span>
+      <span class="spo-role">${qm.role}</span>
+      <span class="spo-repl">${qm.repl}·${qm.io}</span>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// UPDATE FACE TABLE
+// ═══════════════════════════════════════════════════════
+
+function updateFaceTable() {
+  const el = document.getElementById('face-table');
+  el.innerHTML = state.faces.map(f => `
+    <div class="face-row">
+      <span class="face-id">${f.face_id}</span>
+      <span class="face-pts">{${f.vertices.join(',')}}</span>
+      <span class="face-status ${f.status}">${f.status.toUpperCase()}</span>
+      <span class="face-inv">${f.invariant_name}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// UPDATE CENTROID
+// ═══════════════════════════════════════════════════════
+
+function updateCentroid() {
+  const c = state.centroid;
+  document.getElementById('cent-metric').textContent = c.stop_metric.toFixed(4);
+  document.getElementById('cent-bar').style.width = (c.stop_metric * 100) + '%';
+  const sab = document.getElementById('cent-sabbath');
+  sab.textContent = c.sabbath ? 'SABBATH ✦' : 'Φ ' + (c.stop_metric * 7).toFixed(0) + '/7';
+  sab.style.color = c.sabbath ? '#00ff44' : 'var(--dim)';
+
+  // Header
+  document.getElementById('hdr-metric').textContent = 'Φ:' + c.stop_metric.toFixed(2);
+  document.getElementById('hdr-sabbath').textContent = c.sabbath ? 'SABBATH:✦' : 'SABBATH:—';
+  document.getElementById('hdr-sabbath').style.color = c.sabbath ? '#00ff44' : 'var(--dim)';
+}
+
+// ═══════════════════════════════════════════════════════
+// UPDATE 16x16 SAB WINDOW
+// ═══════════════════════════════════════════════════════
+
+function updateWindow() {
+  const el = document.getElementById('window-grid');
+  if (!el.children.length) {
+    // Build grid once
+    for (let i = 0; i < 256; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'win-cell';
+      cell.title = `SAB[${i}] row=${Math.floor(i/16)} col=${i%16}`;
+      el.appendChild(cell);
+    }
+  }
+  const cells = el.children;
+  const now = Date.now();
+  const wb = state.whiteboard || {};
+  const wbActive = typeof wb.expiresAt === 'number' && now < wb.expiresAt;
+
+  for (let i = 0; i < 256; i++) {
+    const row = Math.floor(i / 16);
+    const col = i % 16;
+    const fanoId = (row % 7) + 1;
+    const q = state.quadrants[fanoId] || 'UU';
+    const alpha = col / 15 * 0.8 + 0.1; // w-depth fade
+    const qColors = {
+      KK: '0,255,68',
+      KU: '255,238,0',
+      UK: '255,136,0',
+      UU: '68,85,255',
+      ERR: '255,48,40',
+      SYNC: '255,255,255',
+    };
+    const baseA = (alpha * (row < 12 ? 0.6 : 0.3)).toFixed(2);
+    cells[i].style.background = `rgba(${qColors[q]},${baseA})`;
+
+    // UU/meta projection layer (rows 12–15): light entire column on active SynsetRPC projection.
+    if (wbActive && row >= 12 && row <= 15) {
+      const applies = (wb.kind === 'sync') || (typeof wb.col === 'number' && wb.col === col);
+      if (applies) {
+        const rgb = qColors[wb.quadrantKey] || qColors.UU;
+        let amp = 0.95;
+        if (wb.pulse) {
+          const t = Math.max(0, now - (wb.startedAt || now));
+          amp = 0.35 + 0.60 * Math.exp(-t / 220);
+        }
+        cells[i].style.background = `rgba(${rgb},${amp.toFixed(2)})`;
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// STREAM LOG
+// ═══════════════════════════════════════════════════════
+
+function appendStream(commit) {
+  // Keep an in-memory record buffer for signing/broadcast/anchoring.
+  if (!window.__streamRecords) window.__streamRecords = [];
+  window.__streamRecords.unshift(commit);
+
+  const el = document.getElementById('stream-log');
+  const line = document.createElement('div');
+  line.className = `stream-line ${commit.type}` + (commit._quarantined ? ' quarantined' : '');
+
+  const lc = (commit.lc !== undefined && commit.lc !== null) ? commit.lc : '—';
+  const sh = (commit.self_hash ? commit.self_hash.slice(0,14) : '—');
+  const phi = (commit.centroid && typeof commit.centroid.stop_metric === 'number')
+    ? commit.centroid.stop_metric.toFixed(2)
+    : '—';
+
+  const qMark = commit._quarantined ? '⚠ ' : '';
+  line.textContent = `${qMark}lc:${lc} ${commit.type} ${sh}… Φ:${phi}`;
+  el.insertBefore(line, el.firstChild);
+
+  // Keep max 40 lines
+  while (el.children.length > 40) el.removeChild(el.lastChild);
+
+  // Schema panel shows latest record (best-effort)
+  document.getElementById('schema-panel').textContent =
+    JSON.stringify({
+      id:   commit.id ? (String(commit.id).slice(0,20)+'…') : undefined,
+      t:    commit.t,
+      lc:   commit.lc,
+      type: commit.type,
+      _source: commit._source,
+      _quarantined: commit._quarantined,
+      _quarantine_reason: commit._quarantine_reason,
+      basisRef: commit.basisRef,
+      basisHash: commit.basisHash,
+      centroid: commit.centroid,
+      call_id: commit.call_id,
+      target_coord: commit.target_coord,
+      resolved_coord: commit.resolved_coord,
+      result_coord: commit.result_coord,
+      drift: commit.drift,
+      faces_passed: commit.faces_passed,
+      prev_hash: commit.prev_hash ? (String(commit.prev_hash).slice(0,14)+'…') : undefined,
+      self_hash: commit.self_hash ? (String(commit.self_hash).slice(0,14)+'…') : undefined,
+    }, null, 1);
+
+  // Physical projection hooks (best-effort)
+  maybeProjectToWhiteboard(commit);
+}
+
+// ═══════════════════════════════════════════════════════
+// UNIFIED INGESTION (NDJSON-native)
+// ═══════════════════════════════════════════════════════
+
+function ingestRecord(record, source = 'unknown') {
+  if (!record || typeof record !== 'object') return;
+
+  const rec = { ...record };
+  if (rec.t === undefined || rec.t === null) rec.t = Date.now();
+  if (rec.lc === undefined || rec.lc === null) rec.lc = state.lc++;
+  rec._source = rec._source || source;
+
+  const claimedBasis = rec.basisHash || rec.basisRef;
+  const activeBasis = state?.basisHash;
+  if (claimedBasis && activeBasis && claimedBasis !== activeBasis) {
+    rec._quarantined = true;
+    rec._quarantine_reason = `basis_mismatch active=${activeBasis} claimed=${claimedBasis}`;
+  }
+
+  appendStream(rec);
+}
+
+function ingestNdjsonText(text, source = 'ndjson') {
+  if (!text) return;
+  const lines = String(text).split('\n');
+  for (const line of lines) {
+    const s = line.trim();
+    if (!s) continue;
+    try {
+      ingestRecord(JSON.parse(s), source);
+    } catch {
+      ingestRecord({ type: 'raw', raw: s }, source);
+    }
+  }
+}
+
+function initNdjsonIngestControls() {
+  const ta = document.getElementById('ndjson-paste');
+  const btnIngest = document.getElementById('ndjson-ingest');
+  const btnClear = document.getElementById('ndjson-clear');
+
+  if (btnIngest && ta) btnIngest.addEventListener('click', () => ingestNdjsonText(ta.value, 'paste'));
+  if (btnClear && ta) btnClear.addEventListener('click', () => { ta.value = ''; });
+
+  if (ta) ta.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') ingestNdjsonText(ta.value, 'paste');
+  });
+}
+
+function initGatewayWS() {
+  try {
+    const proto = (location.protocol === 'https:') ? 'wss' : 'ws';
+    const url = `${proto}://${location.host}/ws`;
+    const ws = new WebSocket(url);
+
+    ws.onopen = () => ingestRecord({ type: 'gateway_ws', t: Date.now(), status: 'open', url }, 'gateway_ws');
+    ws.onmessage = (e) => ingestNdjsonText(e.data, 'gateway_ws');
+    ws.onerror = () => ingestRecord({ type: 'gateway_ws', t: Date.now(), status: 'error' }, 'gateway_ws');
+    ws.onclose = () => ingestRecord({ type: 'gateway_ws', t: Date.now(), status: 'closed' }, 'gateway_ws');
+
+    window.__gatewayWS = ws;
+  } catch (e) {
+    ingestRecord({ type: 'gateway_ws', t: Date.now(), status: 'exception', message: String(e) }, 'gateway_ws');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// 16×16 WHITEBOARD PROJECTION (UU/meta rows 12–15)
+// ═══════════════════════════════════════════════════════
+
+function wToCol(w) {
+  const ww = Math.max(0, Math.min(0.999999, Number(w) || 0));
+  return Math.min(15, Math.floor(ww * 16));
+}
+
+function setWhiteboardProjection({ kind, col, quadrantKey, durationMs = 800, pulse = false } = {}) {
+  const startedAt = Date.now();
+  state.whiteboard = {
+    kind: kind || 'column',
+    col: (typeof col === 'number') ? col : null,
+    quadrantKey: quadrantKey || 'UU',
+    startedAt,
+    expiresAt: startedAt + Math.max(50, durationMs),
+    pulse: !!pulse,
+  };
+
+  const statusEl = document.getElementById('wb16-status');
+  if (statusEl) {
+    const colText = (state.whiteboard.kind === 'sync') ? 'all' : String(state.whiteboard.col);
+    statusEl.textContent = `projection: kind=${state.whiteboard.kind} col=${colText} key=${state.whiteboard.quadrantKey} pulse=${state.whiteboard.pulse}`;
+  }
+}
+
+function makeCallId() {
+  if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID();
+  }
+  return `call-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function emitSynsetCallExample() {
+  const call_id = makeCallId();
+  state.lastSynsetCallId = call_id;
+
+  const record = {
+    id: `synset-call-${Date.now()}`,
+    t: Date.now(),
+    lc: state.lc++,
+    type: 'synset_call',
+    basisRef: state.basisHash,
+    basisHash: state.basisHash,
+    call_id,
+    target_coord: { x: 0.82, y: 0.14, z: 0.91, w: 0.125 },
+    caller_entrainment: {
+      tick: state.tick,
+      angle_deg: Number(state.angle.toFixed(2)),
+      quadrant_state: { ...state.quadrants },
+    },
+    prev_hash: state.prevHash,
+  };
+  record.self_hash = hashStr(JSON.stringify({ ...record, self_hash: null, sig: null }));
+  record.sig = hashStr(`sig:${record.self_hash}:${state.basisHash}`);
+  state.prevHash = record.self_hash;
+
+  appendStream(record);
+}
+
+function emitSynsetReplyExample() {
+  const call_id = state.lastSynsetCallId || makeCallId();
+  const result_coord = { x: 0.80, y: 0.20, z: 0.88, w: 0.125 };
+
+  const record = {
+    id: `synset-reply-${Date.now()}`,
+    t: Date.now(),
+    lc: state.lc++,
+    type: 'synset_reply',
+    basisRef: state.basisHash,
+    basisHash: state.basisHash,
+    call_id,
+    resolved_coord: { x: 0.82, y: 0.14, z: 0.91, w: 0.125 },
+    result_coord,
+    drift: 0.07,
+    faces_passed: 3,
+    prev_hash: state.prevHash,
+  };
+  record.self_hash = hashStr(JSON.stringify({ ...record, self_hash: null, sig: null }));
+  record.sig = hashStr(`sig:${record.self_hash}:${state.basisHash}`);
+  state.prevHash = record.self_hash;
+
+  appendStream(record);
+}
+
+function initWhiteboardControls() {
+  const btnCall = document.getElementById('wb-emit-call');
+  const btnReply = document.getElementById('wb-emit-reply');
+
+  if (btnCall) btnCall.addEventListener('click', emitSynsetCallExample);
+  if (btnReply) btnReply.addEventListener('click', emitSynsetReplyExample);
+}
+
+function maybeProjectToWhiteboard(record) {
+  if (!record || !record.type) return;
+
+  if (record.type === 'synset_call' && record.target_coord) {
+    setWhiteboardProjection({
+      kind: 'column',
+      col: wToCol(record.target_coord.w),
+      quadrantKey: 'KU',
+      durationMs: 800,
+      pulse: false,
+    });
+    return;
+  }
+
+  if (record.type === 'synset_reply' && record.result_coord) {
+    const faces = Number(record.faces_passed ?? 0);
+    const ok = faces >= 3;
+    setWhiteboardProjection({
+      kind: 'column',
+      col: wToCol(record.result_coord.w),
+      quadrantKey: ok ? 'KK' : 'UK',
+      durationMs: 650,
+      pulse: true,
+    });
+    return;
+  }
+
+  if (record.type === 'synset_error' && record.target_coord) {
+    setWhiteboardProjection({
+      kind: 'column',
+      col: wToCol(record.target_coord.w),
+      quadrantKey: 'ERR',
+      durationMs: 650,
+      pulse: true,
+    });
+    return;
+  }
+
+  // Opt-in: a sync record can flash the whole UU/meta layer when explicitly marked.
+  if (record.type === 'sync' && record.whiteboard === true) {
+    setWhiteboardProjection({
+      kind: 'sync',
+      quadrantKey: 'SYNC',
+      durationMs: 220,
+      pulse: true,
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// BASIS HANDSHAKE — QR payload + optional camera scan lock
+// ─────────────────────────────────────────────────────────────
+const PROTOCOL_VERSION = 'semantic-basis-modem/0.2';
+
+// Default camera/ring calibration (can be refined after first successful scan)
+state.demodCalibration = state.demodCalibration || {
+  ring_center_norm: { x: 0.5, y: 0.5 },
+  ring_radius_norm: 0.30,
+  exposure_hint: 'auto'
+};
+
+function buildHandshakePayload() {
+  const firstCommit = window.__streamRecords.find(r => r && (r.type === 'commit' || r.type === 'CommitEvent'));
+  return {
+    v: 1,
+    type: 'basis_handshake',
+    protocolVersion: PROTOCOL_VERSION,
+    t: Date.now(),
+    basisHash: state.basisHash,
+    genesis_self_hash: firstCommit ? firstCommit.self_hash : null,
+    calibration: state.demodCalibration
+  };
+}
+
+function canonicalHashable(obj) {
+  // protocol rule: self_hash is computed excluding self_hash + sig
+  const copy = { ...obj, self_hash: null, sig: null };
+  return JSON.stringify(copy);
+}
+
+async function maybeWeb3SignEIP191(message) {
+  if (!window.ethereum) return null;
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    const addr = accounts && accounts[0];
+    if (!addr) return null;
+    const sig = await window.ethereum.request({ method: 'personal_sign', params: [message, addr] });
+    return { sig, addr };
+  } catch {
+    return null;
+  }
+}
+
+async function emitHandshake(direction = 'tx') {
+  const payload = buildHandshakePayload();
+  const record = { ...payload, direction };
+
+  record.self_hash = hashStr(canonicalHashable(record));
+
+  // Prefer EIP-191 when a wallet is connected; otherwise keep deterministic stub
+  const msg = `SBP:${record.self_hash}\nBasis:${record.basisHash}\nProto:${record.protocolVersion}\nDir:${record.direction}`;
+  const signed = await maybeWeb3SignEIP191(msg);
+  if (signed) {
+    record.sig = signed.sig;
+    record.web3_signer = signed.addr;
+    record.sig_scheme = 'eip191';
+  } else {
+    record.sig = hashStr(`sig:${record.self_hash}:${record.basisHash}`);
+    record.sig_scheme = 'stub';
+  }
+
+  appendStream(record);
+  renderHandshakeUI(record);
+  return record;
+}
+
+function renderHandshakeUI(record = null) {
+  const payload = record || buildHandshakePayload();
+  const text = JSON.stringify(payload);
+  const textEl = document.getElementById('basis-handshake-text');
+  if (textEl) textEl.textContent = text;
+
+  const statusEl = document.getElementById('basis-handshake-status');
+  if (statusEl) statusEl.textContent =
+    `proto=${payload.protocolVersion} · basisHash=${String(payload.basisHash).slice(0, 16)}… · calib r=${payload.calibration?.ring_radius_norm ?? '—'}`;
+
+  const canvas = document.getElementById('basis-qr');
+  if (!canvas) return;
+
+  // QRCode is optional (loaded from CDN). If unavailable, leave canvas blank.
+  if (window.QRCode && typeof window.QRCode.toCanvas === 'function') {
+    window.QRCode.toCanvas(canvas, text, { errorCorrectionLevel: 'M', margin: 1, scale: 4 }, (err) => {
+      if (err && statusEl) statusEl.textContent = `QR render failed: ${String(err)}`;
+    });
+  } else {
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0b1020';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#e7dfc6';
+      ctx.font = '10px monospace';
+      ctx.fillText('QR lib not loaded', 10, 20);
+      ctx.fillText('Use COPY instead', 10, 36);
+    }
+  }
+}
+
+// Copy handshake payload to clipboard
+async function copyHandshake() {
+  const payload = buildHandshakePayload();
+  const text = JSON.stringify(payload);
+  try {
+    await navigator.clipboard.writeText(text);
+    const statusEl = document.getElementById('basis-handshake-status');
+    if (statusEl) statusEl.textContent = 'Copied handshake payload to clipboard.';
+  } catch {
+    // Fallback: prompt
+    window.prompt('Copy handshake payload:', text);
+  }
+}
+
+// Camera QR scan: uses BarcodeDetector if available
+let handshakeScanEnabled = false;
+let handshakeScanTimer = null;
+
+async function startHandshakeScan() {
+  const statusEl = document.getElementById('basis-handshake-status');
+  if (!('BarcodeDetector' in window)) {
+    if (statusEl) statusEl.textContent = 'BarcodeDetector not available in this browser.';
+    return;
+  }
+  const video = document.getElementById('dem-camera-preview');
+  if (!video || !video.srcObject) {
+    if (statusEl) statusEl.textContent = 'Start the camera first (DEMODULATOR → START CAMERA).';
+    return;
+  }
+
+  handshakeScanEnabled = true;
+  if (statusEl) statusEl.textContent = 'Scanning for QR handshake…';
+
+  const detector = new BarcodeDetector({ formats: ['qr_code'] });
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  handshakeScanTimer = setInterval(async () => {
+    try {
+      if (!handshakeScanEnabled) return;
+      if (!video.videoWidth || !video.videoHeight) return;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+
+      const codes = await detector.detect(canvas);
+      if (!codes || !codes.length) return;
+
+      const raw = codes[0].rawValue;
+      if (!raw) return;
+
+      let parsed = null;
+      try { parsed = JSON.parse(raw); } catch { return; }
+      if (!parsed || parsed.type !== 'basis_handshake' || !parsed.basisHash) return;
+
+      // Derive calibration from QR bounding box if not provided (or to fill missing geometry).
+      const bb = (codes[0] && codes[0].boundingBox) ? codes[0].boundingBox : null;
+      const inferred = (() => {
+        if (!bb) return null;
+        const cx = (bb.x + bb.width / 2) / canvas.width;
+        const cy = (bb.y + bb.height / 2) / canvas.height;
+        const size = Math.max(bb.width, bb.height);
+        // Heuristic: ring radius is ~2.2× QR size (tune via encoded calibration later if needed).
+        const r = (size * 2.2) / Math.min(canvas.width, canvas.height);
+        return {
+          ring_center_norm: { x: clamp01(cx), y: clamp01(cy) },
+          ring_radius_norm: clamp01(r),
+          exposure_hint: 'auto',
+          source: 'qr_bbox'
+        };
+      })();
+
+      const mergedCal = {
+        ...(state.demodCalibration || {}),
+        ...(parsed.calibration || {}),
+        ...(inferred || {})
+      };
+
+      // Lock basis + calibration
+      state.basisHash = parsed.basisHash;
+      state.demodCalibration = mergedCal;
+
+      // Reflect in UI
+      const basisText = document.getElementById('basis-hash-text');
+      if (basisText) basisText.textContent = state.basisHash;
+
+      const rx = {
+        ...parsed,
+        type: 'basis_handshake_rx',
+        t: Date.now(),
+        sensor: 'camera_qr',
+        prev_hash: state.prevHash || null,
+        self_hash: null,
+        sig: null
+      };
+      rx.self_hash = hashStr(canonicalHashable(rx));
+      rx.sig = hashStr(`sig:${rx.self_hash}:${rx.basisHash}`);
+
+      ingestRecord(rx, 'camera_qr');
+      renderHandshakeUI(parsed);
+
+      if (statusEl) statusEl.textContent = 'Handshake scanned: basis locked + calibration applied.';
+      // Stop scanning after first success
+      stopHandshakeScan();
+    } catch (e) {
+      // ignore transient scan errors
+    }
+  }, 750);
+}
+
+function stopHandshakeScan() {
+  handshakeScanEnabled = false;
+  if (handshakeScanTimer) clearInterval(handshakeScanTimer);
+  handshakeScanTimer = null;
+}
+
+// Wire UI buttons
+(function wireHandshakeButtons(){
+  const emitBtn = document.getElementById('btn-handshake-emit');
+  const copyBtn = document.getElementById('btn-handshake-copy');
+  const scanBtn = document.getElementById('btn-handshake-scan');
+
+  if (emitBtn) emitBtn.addEventListener('click', () => emitHandshake('tx'));
+  if (copyBtn) copyBtn.addEventListener('click', () => copyHandshake());
+  if (scanBtn) scanBtn.addEventListener('click', async () => {
+    if (handshakeScanEnabled) {
+      stopHandshakeScan();
+      const statusEl = document.getElementById('basis-handshake-status');
+      if (statusEl) statusEl.textContent = 'Scan stopped.';
+    } else {
+      await startHandshakeScan();
+    }
+  });
+
+  // Initial render
+  renderHandshakeUI();
+})();
+
+// ═══════════════════════════════════════════════════════
+// NARRATIVE BUILDER
+// ═══════════════════════════════════════════════════════
+
+const NARRATIVE_TEMPLATES = {
+  subject_pass:   (n,r) => `${n} intends ${r} through the open channel`,
+  predicate_pass: (n,r) => `${n} mediates the event toward resolution`,
+  object_pass:    (n,r) => `${n} receives incidence, closes the triple`,
+  centroid_pass:  (n,r) => `${n} rests at the centroid — meaning held`,
+  sabbath:        ()    => `All seven lines close. The garden is sealed. ✦`,
+};
+
+function buildNarrative(commit) {
+  if (commit.centroid?.sabbath) {
+    state.narratives.unshift(NARRATIVE_TEMPLATES.sabbath());
+  } else {
+    const subjects = FANO_POINTS.filter(p => state.quadrants[p.id] === 'KK');
+    if (subjects.length) {
+      const n = subjects[0].name;
+      const r = QUADRANT_MAP['KK'].golden;
+      state.narratives.unshift(NARRATIVE_TEMPLATES.subject_pass(n, r));
+    }
+  }
+  if (state.narratives.length > 20) state.narratives = state.narratives.slice(0,20);
+
+  const el = document.getElementById('narrative-panel');
+  if (!el) return;
+  el.innerHTML = state.narratives.map(t =>
+    `<div style="padding:2px 0;border-bottom:1px solid var(--dimmer)">${t}</div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// WORDNET PANEL
+// ═══════════════════════════════════════════════════════
+
+function buildWordnetPanel() {
+  const el = document.getElementById('wordnet-panel');
+  el.innerHTML = `
+    <div style="font-size:7px;color:var(--gold2);line-height:1.8">
+      <div style="color:var(--dim);margin-bottom:4px">basis: ${state.basisHash.slice(0,20)}…</div>
+      ${WORDNET_SIMPLEX.map(ws => `
+        <div style="display:flex;gap:6px;align-items:center;padding:2px 0;border-bottom:1px solid var(--dimmer)">
+          <span style="color:${ws.face==='agency'?'#00ff44':ws.face==='ethics'?'#ffee00':'#ff8800'};width:12px">▸</span>
+          <span style="width:70px;color:var(--gold)">${ws.word}</span>
+          <span style="color:var(--dim);flex:1">${ws.synset}</span>
+          <span style="color:var(--gold2)">w=${ws.w.toFixed(3)}</span>
+        </div>`).join('')}
+      <div style="margin-top:8px;color:var(--dim)">WordNet 3.1 · SHA256:</div>
+      <div style="color:var(--gold2);word-break:break-all;font-size:6px">${state.basisHash}</div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// DOCUMENT GRAPH PANEL
+// ═══════════════════════════════════════════════════════
+
+function buildDocGraph() {
+  const el = document.getElementById('doc-graph');
+  el.innerHTML = SVG_DOCS.map(doc => `
+    <div class="doc-node" onclick="selectDoc('${doc.id}')" id="docnode-${doc.id}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:${doc.color};font-size:9px">${doc.name}</span>
+        <span class="doc-node-type">${doc.type}</span>
+      </div>
+      <div class="doc-node-hash">${doc.hash} · ${doc.id}</div>
+    </div>`).join('');
+}
+
+function selectDoc(id) {
+  document.querySelectorAll('.doc-node').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('docnode-' + id);
+  if (el) el.classList.add('active');
+  appendStream({ lc:state.lc++, type:'projection', t:Date.now(),
+    self_hash: hashStr('prj:'+id+Date.now()),
+    prev_hash: state.prevHash,
+    centroid: state.centroid,
+    id: `prj-${id}-${Date.now()}` });
+}
+
+// ═══════════════════════════════════════════════════════
+// ESP32 LATTICE PANEL
+// ═══════════════════════════════════════════════════════
+
+function buildESPList() {
+  const el = document.getElementById('esp-list');
+  el.innerHTML = ESP_NODES.map(n => `
+    <div class="esp-node">
+      <span class="esp-dot" style="background:${n.color}"></span>
+      <span class="esp-id">${n.id}</span>
+      <span class="esp-state" style="color:${n.color}">${n.state}</span>
+      <span class="esp-metric" style="color:${n.color}">${n.metric.toFixed(2)}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// PATTERN RUNNER
+// ═══════════════════════════════════════════════════════
+
+function runPattern(name) {
+  state.pattern = name;
+  state.patternStep = 0;
+  appendStream({ lc:state.lc++, type:'face_eval', t:Date.now(),
+    self_hash: hashStr('pat:'+name), prev_hash: state.prevHash,
+    centroid: state.centroid, id:`pat-${name}-${Date.now()}` });
+}
+
+function stepPattern() {
+  if (!state.pattern) return;
+  if (state.pattern === 'tetrahedral_sweep') {
+    // Sweep radially ring by ring
+    const ring = RINGS[state.patternStep % RINGS.length];
+    document.querySelectorAll(`.led[data-ring="${state.patternStep % RINGS.length}"]`).forEach(el => {
+      el.setAttribute('filter','url(#glow-md)');
+      setTimeout(() => el.removeAttribute('filter'), 400);
+    });
+    state.patternStep++;
+    if (state.patternStep >= RINGS.length) state.pattern = null;
+  } else if (state.pattern === 'fano_line_cycle') {
+    const line = FANO_LINES[state.patternStep % 7];
+    document.querySelectorAll('.fano-line-svg').forEach(el => {
+      const isActive = el.dataset.line === line.id;
+      el.classList.toggle('lit', isActive);
+    });
+    state.activeLine = line.id;
+    document.getElementById('active-line-display').textContent = line.id + ' {' + line.points.join(',') + '}';
+    state.patternStep++;
+    if (state.patternStep >= 7) { state.pattern = null; document.querySelectorAll('.fano-line-svg').forEach(el=>el.classList.remove('lit')); }
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════════════════
+
+function toggleRotate() {
+  state.autoRotate = !state.autoRotate;
+  const btn = document.getElementById('btn-rotate');
+  btn.textContent = state.autoRotate ? 'ON' : 'OFF';
+  btn.classList.toggle('active', state.autoRotate);
+}
+
+function seekSabbath() {
+  // Find nearest angle where sabbath occurs
+  // Try angles in steps until sabbath or max search
+  for (let a = state.angle; a < state.angle + 360; a += 0.5) {
+    const q = updateQuadrants(a);
+    const f = evaluateFaces(q);
+    const c = computeCentroid(f);
+    if (c.sabbath) {
+      state.angle = a % 360;
+      break;
+    }
+  }
+}
+
+document.getElementById('spin-speed').addEventListener('input', function() {
+  state.spinSpeed = parseFloat(this.value);
+  document.getElementById('spin-val').textContent = this.value + '°';
+});
+
+// ═══════════════════════════════════════════════════════
+// MAIN LOOP
+// ═══════════════════════════════════════════════════════
+
+let frameCount = 0;
+
+function tick() {
+  if (state.autoRotate) {
+    state.angle = (state.angle + state.spinSpeed) % 360;
+    state.tick++;
+    if (state.tick >= 720) { state.tick = 0; state.cycle++; }
+  }
+
+  // Update quadrant state
+  state.quadrants = updateQuadrants(state.angle);
+  state.faces     = evaluateFaces(state.quadrants);
+  state.centroid  = computeCentroid(state.faces);
+
+  // Header
+  document.getElementById('hdr-lc').textContent    = 'lc:' + state.lc;
+  document.getElementById('hdr-tick').textContent  = 'tick:' + state.tick;
+  document.getElementById('hdr-angle').textContent = state.angle.toFixed(1) + '°';
+
+  // Visual updates
+  updateLEDColors();
+  updateEpistemicSquare();
+  updateSPOTable();
+  updateCentroid();
+  updateFaceTable();
+  updateWindow();
+
+  // Pattern
+  if (frameCount % 8 === 0) stepPattern();
+
+  // Emit commits at transition boundaries (every ~10 frames)
+  if (frameCount % 10 === 0) {
+    const type = state.centroid.sabbath ? 'commit'
+               : state.tick % 90 === 0  ? 'sync'
+               : 'face_eval';
+    emitCommit(type);
+  }
+
+  frameCount++;
+  requestAnimationFrame(tick);
+}
+
+
+// ═══════════════════════════════════════════════════════
+// MODEM MODULES (Modulator / Demodulator / Ledger+Broadcast)
+// ═══════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────
+// MODULATOR — (v0) naive SPO extraction → Fano line mapping
+// Replace extractSPO() with winkNLP pipeline when you wire it in.
+// ─────────────────────────────────────────────────────────────
+
+function extractSPO(text) {
+  const input = String(text || '').trim();
+  if (!input) return [];
+
+  // Prefer winkNLP if available
+  if (window.__wink && window.__wink.ready && window.__wink.nlp) {
+    const nlp = window.__wink.nlp;
+    const its = window.__wink.its;
+
+    // Use first sentence only for v1
+    const doc = nlp.readDoc(input);
+    const sent = doc.sentences().itemAt(0);
+    if (sent) {
+      const tokens = sent.tokens().out(its.detail);
+
+      // Find first VERB as predicate anchor
+      const verbIdx = tokens.findIndex(t => t.pos === 'VERB' || t.pos === 'AUX');
+      if (verbIdx >= 0) {
+        // Subject: nearest NOUN/PROPN/PRON to the left
+        let sIdx = -1;
+        for (let i = verbIdx - 1; i >= 0; i--) {
+          const p = tokens[i].pos;
+          if (p === 'NOUN' || p === 'PROPN' || p === 'PRON') { sIdx = i; break; }
+        }
+        // Object: nearest NOUN/PROPN/PRON to the right
+        let oIdx = -1;
+        for (let i = verbIdx + 1; i < tokens.length; i++) {
+          const p = tokens[i].pos;
+          if (p === 'NOUN' || p === 'PROPN' || p === 'PRON') { oIdx = i; break; }
+        }
+
+        const subj = sIdx >= 0 ? (tokens[sIdx].lemma || tokens[sIdx].value) : (tokens[0]?.lemma || tokens[0]?.value || '∅');
+        const pred = (tokens[verbIdx].lemma || tokens[verbIdx].value || '∅');
+        const obj  = oIdx >= 0 ? (tokens[oIdx].lemma || tokens[oIdx].value) : (tokens[tokens.length-1]?.lemma || tokens[tokens.length-1]?.value || '∅');
+
+        return [{ subject: subj, predicate: pred, object: obj, source: 'winkNLP' }];
+      }
+    }
+  }
+
+  // Fallback heuristic (v0)
+  const words = input
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (words.length < 3) return [];
+
+  // Naive: take first 3 tokens as S P O
+  return [{
+    subject: words[0],
+    predicate: words[1],
+    object: words[2],
+    source: 'heuristic'
+  }];
+}
+
+function predicateToFanoLine(predicate) {
+  const map = {
+    'granted': 'L1',
+    'grant':   'L1',
+    'gave':    'L2',
+    'give':    'L2',
+    'made':    'L3',
+    'make':    'L3',
+    'told':    'L4',
+    'tell':    'L4',
+    'asked':   'L5',
+    'ask':     'L5',
+    'took':    'L6',
+    'take':    'L6',
+    'became':  'L7',
+    'become':  'L7',
+  };
+  return map[String(predicate || '').toLowerCase()] || 'L1';
+}
+
+function emitTxFrame(lineId, spoTriple, baudCycle) {
+  const t = Date.now();
+  const frameId = `tx-${baudCycle}-${t}`;
+
+  const line = FANO_LINES.find(l => l.id === lineId) || FANO_LINES[0];
+  const carrier = {
+    fano_line: lineId,
+    points: line.points,
+    phases: line.points.map(pid => {
+      const q = state.quadrants[pid] || 'UU';
+      const p = FANO_POINTS.find(pp => pp.id === pid);
+      return { point: pid, quadrant: q, phase: ((p?.hue || 0) / 360) * Math.PI * 2 };
+    }),
+    brightness: state.centroid?.stop_metric ?? 0,
+    duration_ticks: FULL_CYCLE
+  };
+
+  const frame = {
+    type: 'tx_frame',
+    id: frameId,
+    t,
+    basisHash: state.basisHash,
+    baud: baudCycle,
+    carrier,
+    symbol: { fano_line_id: lineId, spo: spoTriple },
+    prev_hash: state.prevHash || null,
+    self_hash: null,
+    sig: null,
+  };
+
+  frame.self_hash = hashStr(JSON.stringify({ ...frame, self_hash: null, sig: null }));
+  frame.sig = hashStr(`sig:${frame.self_hash}:${state.basisHash}`);
+
+  appendStream(frame);
+
+  // Optionally stamp into the canonical commit chain.
+  // We do it on sabbath or every 10th baud as a demo.
+  if (state.centroid?.sabbath || (baudCycle % 10 === 0)) {
+    emitCommit('tx_frame', { tx_frame_id: frameId, carrier, symbol: frame.symbol });
+  }
+
+  return frame;
+}
+
+(function wireModulatorUI() {
+  const btnExtract = document.getElementById('mod-extract-spo');
+  const btnSelect  = document.getElementById('mod-select-line');
+  const btnTx      = document.getElementById('mod-transmit');
+
+  if (!btnExtract || !btnSelect || !btnTx) return;
+
+  btnExtract.addEventListener('click', () => {
+    const text = document.getElementById('mod-text-input')?.value || '';
+    const triples = extractSPO(text);
+    const spoDiv = document.getElementById('mod-spo-rows');
+    if (!spoDiv) return;
+
+    spoDiv.innerHTML = triples.map(t =>
+      `<div style="display:flex; gap:4px; color:var(--kk);">
+        <span style="width:60px">${t.subject}</span>
+        <span style="width:60px; color:var(--ku)">${t.predicate}</span>
+        <span style="width:60px; color:var(--uk)">${t.object}</span>
+      </div>`
+    ).join('');
+  });
+
+  btnSelect.addEventListener('click', () => {
+    const text = document.getElementById('mod-text-input')?.value || '';
+    const triples = extractSPO(text);
+    if (!triples.length) return;
+
+    const lineId = predicateToFanoLine(triples[0].predicate);
+    document.getElementById('mod-fano-line').textContent = lineId;
+
+    const line = FANO_LINES.find(l => l.id === lineId) || FANO_LINES[0];
+    const quads = line.points.map(pid => state.quadrants[pid] || 'UU').join('·');
+    document.getElementById('mod-quadrants').textContent = quads;
+
+    window.__pendingTx = { lineId, spo: triples[0] };
+  });
+
+  btnTx.addEventListener('click', () => {
+    if (!window.__pendingTx) return;
+
+    const baudCycle = state.cycle;
+    emitTxFrame(window.__pendingTx.lineId, window.__pendingTx.spo, baudCycle);
+
+    // Visual feedback: highlight chosen line
+    const n = parseInt(String(window.__pendingTx.lineId).slice(1), 10);
+    if (Number.isFinite(n)) highlightFanoLines(n);
+
+    // Ensure rotation is on for a full cycle
+    state.autoRotate = true;
+    const rotBtn = document.getElementById('btn-rotate');
+    if (rotBtn) {
+      rotBtn.textContent = 'ON';
+      rotBtn.classList.add('active');
+    }
+
+    document.getElementById('mod-baud').textContent = `${baudCycle}/720`;
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// DEMODULATOR — Camera/Serial → Quadrant detection → Fano line
+// NOTE: The current camera detector is a placeholder.
+// Replace with ring segmentation + per-LED color decoding.
+// ─────────────────────────────────────────────────────────────
+
+let __cameraStream = null;
+let __serialPort = null;
+let __serialReader = null;
+
+let __cameraSampler = null;
+
+// --- Demodulation helpers: calibrated ring sampling ---------------------------------
+
+function __hexToRgb(hex) {
+  if (!hex) return { r: 0, g: 0, b: 0 };
+  const h = hex.replace('#','').trim();
+  const full = h.length === 3 ? h.split('').map(ch => ch+ch).join('') : h;
+  const n = parseInt(full, 16);
+  if (!Number.isFinite(n)) return { r: 0, g: 0, b: 0 };
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+const __QUAD_RGB = (() => {
+  const out = {};
+  for (const [k, v] of Object.entries(QUADRANT_MAP)) {
+    out[k] = __hexToRgb(v.color);
+  }
+  return out;
+})();
+
+function __clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function __avgRgb(ctx, x, y, box = 10) {
+  const w = ctx.canvas.width, h = ctx.canvas.height;
+  const half = Math.max(1, Math.floor(box / 2));
+  const sx = Math.floor(__clamp(x - half, 0, w - 1));
+  const sy = Math.floor(__clamp(y - half, 0, h - 1));
+  const ex = Math.floor(__clamp(x + half, 0, w - 1));
+  const ey = Math.floor(__clamp(y + half, 0, h - 1));
+  const bw = Math.max(1, ex - sx);
+  const bh = Math.max(1, ey - sy);
+  const data = ctx.getImageData(sx, sy, bw, bh).data;
+  let r = 0, g = 0, b = 0, n = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    r += data[i]; g += data[i+1]; b += data[i+2];
+    n++;
+  }
+  if (!n) return { r: 0, g: 0, b: 0 };
+  return { r: r / n, g: g / n, b: b / n };
+}
+
+function __nearestQuadrant(rgb) {
+  let best = 'UU';
+  let bestD = Infinity;
+  for (const [q, qc] of Object.entries(__QUAD_RGB)) {
+    const dr = rgb.r - qc.r;
+    const dg = rgb.g - qc.g;
+    const db = rgb.b - qc.b;
+    const d = dr*dr + dg*dg + db*db;
+    if (d < bestD) { bestD = d; best = q; }
+  }
+  return best;
+}
+
+/**
+ * Detect per-point quadrants by sampling video pixels at calibrated ring positions.
+ * Calibration:
+ *  - ring_center_norm: normalized center in [0,1]x[0,1]
+ *  - ring_radius_norm: normalized radius relative to min(videoW, videoH)
+ */
+function __detectPerPointQuadrants(ctx, videoW, videoH, calib) {
+  const c = calib || { ring_center_norm: { x: 0.5, y: 0.5 }, ring_radius_norm: 0.30 };
+  const cx = (c.ring_center_norm?.x ?? 0.5) * videoW;
+  const cy = (c.ring_center_norm?.y ?? 0.5) * videoH;
+  const radius = (c.ring_radius_norm ?? 0.30) * Math.min(videoW, videoH);
+
+  const perPoint = {};
+  for (const p of FANO_POINTS) {
+  // NOTE: Canvas/video y-axis is down, while our math y is up. Invert p.y.
+  const px = (p.x ?? 0), py = (p.y ?? 0);
+  const sx = cx + radius * px;
+  const sy = cy - radius * py;
+
+  // Sample a tiny arc (center + two tangential offsets) to stabilize against blur/aliasing.
+  const tx = -py, ty = px; // tangent on unit circle
+  const arc = radius * 0.05;
+  const s1 = __avgRgb(ctx, sx, sy, 14);
+  const s2 = __avgRgb(ctx, sx + arc * tx, sy - arc * ty, 10);
+  const s3 = __avgRgb(ctx, sx - arc * tx, sy + arc * ty, 10);
+
+  const rgb = { r: (s1.r + s2.r + s3.r)/3, g: (s1.g + s2.g + s3.g)/3, b: (s1.b + s2.b + s3.b)/3 };
+  perPoint[p.id] = __nearestQuadrant(rgb);
+}
+  return perPoint;
+}
+// ------------------------------------------------------------------------------------
+function inferFanoLineFromQuadrants(quadrants) {
+  const candidates = FANO_LINES.map(line => {
+    const quads = line.points.map(pid => quadrants[pid] || 'UU');
+    const roles = quads.map(q => (QUADRANT_MAP[q] || QUADRANT_MAP.UU).spo);
+    const unique = new Set(roles);
+
+    let confidence = 0;
+    if (unique.has('subject') && unique.has('predicate') && unique.has('object')) confidence = 1.0;
+    else if (unique.size === 1) confidence = 0.8;
+    else if (unique.size === 2) confidence = 0.5;
+
+    return { line, confidence, quads, roles };
+  });
+
+  candidates.sort((a,b) => b.confidence - a.confidence);
+  return candidates[0]?.confidence > 0.3 ? candidates[0] : null;
+}
+
+function lineToSPO(lineId) {
+  const map = {
+    'L1': { subject: 'Metatron',  predicate: 'grants',  object: 'sovereignty' },
+    'L2': { subject: 'Metatron',  predicate: 'reveals', object: 'wisdom' },
+    'L3': { subject: 'Metatron',  predicate: 'speaks',  object: 'genesis' },
+    'L4': { subject: 'Solomon',   predicate: 'judges',  object: 'speaker' },
+    'L5': { subject: 'Solomon',   predicate: 'seeks',   object: 'enoch' },
+    'L6': { subject: 'Asabiyyah', predicate: 'binds',   object: 'speaker' },
+    'L7': { subject: 'Asabiyyah', predicate: 'ascends', object: 'genesis' },
+  };
+  return map[lineId] || { subject:'unknown', predicate:'unknown', object:'unknown' };
+}
+
+function emitRxFrame(inferred, detectedQuadrants) {
+  const t = Date.now();
+  const frameId = `rx-${state.cycle}-${t}`;
+
+  const frame = {
+    type: 'rx_frame',
+    id: frameId,
+    t,
+    basisHash: state.basisHash,
+    sensor: {
+      source: __cameraStream ? 'camera' : (__serialPort ? 'serial' : 'unknown'),
+      confidence: inferred?.confidence ?? 0,
+      sample_window: 1000,
+    },
+    decoded: {
+      quadrants: detectedQuadrants,
+      fano_line_id: inferred?.line?.id ?? null,
+      inferred_spo: inferred?.line?.id ? lineToSPO(inferred.line.id) : null,
+    },
+    prev_hash: state.prevHash || null,
+    self_hash: null,
+    sig: null,
+  };
+
+  frame.self_hash = hashStr(JSON.stringify({ ...frame, self_hash: null, sig: null }));
+  frame.sig = hashStr(`sig:${frame.self_hash}:${state.basisHash}`);
+
+  ingestRecord(frame, frame.sensor?.source || 'demod');
+  return frame;
+}
+
+function updateDemodQuadrants(detectedQuadrants) {
+  const quadDiv = document.getElementById('dem-quadrants');
+  if (!quadDiv) return;
+
+  quadDiv.innerHTML = '';
+  FANO_POINTS.forEach(p => {
+    const q = detectedQuadrants[p.id] || 'UU';
+    const div = document.createElement('div');
+    div.style.background = (QUADRANT_MAP[q] || QUADRANT_MAP.UU).color;
+    div.style.opacity = '0.35';
+    div.style.padding = '4px';
+    div.style.borderRadius = '2px';
+    div.style.textAlign = 'center';
+    div.style.fontSize = '7px';
+    div.style.color = '#fff';
+    div.textContent = `${p.name.slice(0,3)}:${q}`;
+    quadDiv.appendChild(div);
+  });
+
+  const inferred = inferFanoLineFromQuadrants(detectedQuadrants);
+  if (inferred) {
+    document.getElementById('dem-line').textContent = inferred.line.id;
+    document.getElementById('dem-confidence').textContent = inferred.confidence.toFixed(2);
+
+    const spo = lineToSPO(inferred.line.id);
+    document.getElementById('dem-spo').textContent = `${spo.subject} → ${spo.predicate} → ${spo.object}`;
+
+    emitRxFrame(inferred, detectedQuadrants);
+  }
+}
+
+(function wireDemodulatorUI() {
+  const btnCam = document.getElementById('dem-camera-start');
+  const btnSer = document.getElementById('dem-serial-start');
+  const btnDec = document.getElementById('dem-decode');
+
+  if (btnCam) btnCam.addEventListener('click', async () => {
+    try {
+      __cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const video = document.getElementById('dem-camera-preview');
+      video.srcObject = __cameraStream;
+      video.style.display = 'block';
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+      if (__cameraSampler) clearInterval(__cameraSampler);
+      __cameraSampler = setInterval(() => {
+        if (!video.videoWidth) return;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+
+        
+// Ring sampling: use calibration (center+radius) to sample around the ring for each Fano point.
+const w = canvas.width, h = canvas.height;
+const perPoint = __detectPerPointQuadrants(ctx, w, h, state.demodCalibration);
+updateDemodQuadrants(perPoint);
+      }, 1000);
+
+    } catch (err) {
+      console.error('Camera error:', err);
+      alert('Camera error: ' + err);
+    }
+  });
+
+  if (btnSer) btnSer.addEventListener('click', async () => {
+    try {
+      __serialPort = await navigator.serial.requestPort();
+      await __serialPort.open({ baudRate: 115200 });
+
+      const consoleDiv = document.getElementById('dem-serial-console');
+      consoleDiv.style.display = 'block';
+
+      __serialReader = __serialPort.readable.getReader();
+      const dec = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { value, done } = await __serialReader.read();
+        if (done) break;
+
+        buffer += dec.decode(value);
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          const s = line.trim();
+          if (!s) continue;
+
+          const div = document.createElement('div');
+          div.textContent = s.slice(0, 80);
+          consoleDiv.appendChild(div);
+          while (consoleDiv.children.length > 6) consoleDiv.removeChild(consoleDiv.firstChild);
+
+          // Keep serial console readable: only ingest lines that look like JSON/NDJSON.
+          if (s[0] === '{' || s[0] === '[') ingestNdjsonText(s, 'serial');
+
+          try {
+            const data = JSON.parse(s);
+            if (data.type === 'rx_frame' && data.decoded?.quadrants) {
+              updateDemodQuadrants(data.decoded.quadrants);
+            }
+          } catch {}
+        }
+      }
+    } catch (err) {
+      console.error('Serial error:', err);
+      alert('Serial error: ' + err);
+    }
+  });
+
+  if (btnDec) btnDec.addEventListener('click', () => {
+    // Manual decode trigger: if camera sampling is running, it will emit automatically.
+    // As a fallback, emit a stub rx_frame so wiring stays testable.
+    const demo = {};
+    FANO_POINTS.forEach((p, i) => demo[p.id] = ['KK','KU','UK','UU'][i % 4]);
+    updateDemodQuadrants(demo);
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// LEDGER — Web3 signing + anchor (demo) + WebRTC broadcast (demo)
+// ─────────────────────────────────────────────────────────────
+
+let __signerAddress = null;
+
+function getLatestRecord() {
+  const recs = window.__streamRecords || [];
+  return recs[0] || null;
+}
+function getRecentRecords(n) {
+  const recs = window.__streamRecords || [];
+  return recs.slice(0, Math.max(0, n|0));
+}
+
+(function wireLedgerUI() {
+  const btnConnect = document.getElementById('signer-connect');
+  const btnSign    = document.getElementById('signer-sign');
+  const btnAnchor  = document.getElementById('signer-anchor');
+
+  if (btnConnect) btnConnect.addEventListener('click', async () => {
+    if (!window.ethereum) return alert('No Web3 wallet found (window.ethereum missing).');
+
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      __signerAddress = accounts?.[0] || null;
+
+      const short = __signerAddress ? (__signerAddress.slice(0,6) + '...' + __signerAddress.slice(-4)) : 'not connected';
+      document.getElementById('signer-address').textContent = short;
+      document.getElementById('signer-status-dot').style.background = __signerAddress ? 'var(--kk)' : 'var(--dim)';
+    } catch (err) {
+      console.error('Wallet connection failed:', err);
+      alert('Wallet connection failed: ' + err);
+    }
+  });
+
+  if (btnSign) btnSign.addEventListener('click', async () => {
+    if (!__signerAddress) return alert('Connect wallet first.');
+    const latest = getLatestRecord();
+    if (!latest?.self_hash) return alert('No record with self_hash in stream yet.');
+
+    const message = `WESIRI commit\nbasis=${state.basisHash}\nself_hash=${latest.self_hash}\nprev_hash=${latest.prev_hash || 'null'}`;
+
+    try {
+      const signature = await window.ethereum.request({
+        method: 'personal_sign',
+        params: [message, __signerAddress]
+      });
+
+      document.getElementById('signer-last-sig').textContent = 'sig: ' + signature.slice(0, 28) + '…';
+
+      // Emit a signed wrapper record (does not mutate the original payload)
+      appendStream({
+        type: 'signed',
+        id: `sig-${Date.now()}`,
+        t: Date.now(),
+        basisHash: state.basisHash,
+        target_self_hash: latest.self_hash,
+        web3_signer: __signerAddress,
+        web3_signature: signature,
+        prev_hash: state.prevHash || null,
+        self_hash: hashStr(`signed:${latest.self_hash}:${signature}`),
+        sig: signature,
+      });
+
+    } catch (err) {
+      console.error('Signing failed:', err);
+      alert('Signing failed: ' + err);
+    }
+  });
+
+  if (btnAnchor) btnAnchor.addEventListener('click', async () => {
+    if (!__signerAddress) return alert('Connect wallet first.');
+    const commits = getRecentRecords(10).filter(r => r?.self_hash).map(r => r.self_hash);
+    if (!commits.length) return alert('No hashes in the stream.');
+
+    // Simple Merkle-ish fold for demo
+    let layer = commits.slice();
+    while (layer.length > 1) {
+      const next = [];
+      for (let i = 0; i < layer.length; i += 2) {
+        const left = layer[i];
+        const right = layer[i+1] || left;
+        next.push(hashStr(left + right));
+      }
+      layer = next;
+    }
+    const merkleRoot = layer[0];
+
+    appendStream({
+      type: 'anchor',
+      id: `anc-${Date.now()}`,
+      t: Date.now(),
+      basisHash: state.basisHash,
+      merkle_root: merkleRoot,
+      commits_anchored: commits.length,
+      anchorer: __signerAddress,
+      prev_hash: state.prevHash || null,
+      self_hash: hashStr(`anchor:${merkleRoot}:${Date.now()}`),
+      sig: null,
+    });
+
+    alert(`Anchor simulated.\nmerkle_root=${merkleRoot}`);
+  });
+})();
+
+let __peer = null;
+let __dc = null;
+
+(function wireBroadcastUI() {
+  const btnStart = document.getElementById('rtc-start');
+  const btnCast  = document.getElementById('rtc-broadcast');
+  const logEl    = document.getElementById('rtc-log');
+  const dotEl    = document.getElementById('rtc-status-dot');
+
+  const log = (s) => {
+    if (!logEl) return;
+    const d = document.createElement('div');
+    d.textContent = s;
+    logEl.appendChild(d);
+    while (logEl.children.length > 6) logEl.removeChild(logEl.firstChild);
+  };
+
+  if (btnStart) btnStart.addEventListener('click', async () => {
+    try {
+      __peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+      __dc = __peer.createDataChannel('semantic-basis');
+
+      __dc.onopen = () => {
+        if (dotEl) dotEl.style.background = 'var(--kk)';
+        log('channel open');
+      };
+      __dc.onmessage = (e) => {
+        log('rx: ' + String(e.data).slice(0, 48));
+        ingestNdjsonText(e.data, 'webrtc');
+      };
+
+      __peer.onicecandidate = (e) => {
+        if (e.candidate) log('ice: ' + e.candidate.type);
+      };
+
+      const offer = await __peer.createOffer();
+      await __peer.setLocalDescription(offer);
+      if (dotEl) dotEl.style.background = 'var(--ku)';
+      log('offer created (demo mode — needs signalling)');
+      log('local SDP length: ' + (__peer.localDescription?.sdp?.length || 0));
+    } catch (err) {
+      console.error('WebRTC error:', err);
+      alert('WebRTC error: ' + err);
+    }
+  });
+
+  if (btnCast) btnCast.addEventListener('click', () => {
+    if (!__dc || __dc.readyState !== 'open') return alert('DataChannel not open.');
+    const latest = getLatestRecord();
+    if (!latest) return alert('No stream records.');
+
+    __dc.send(JSON.stringify(latest));
+    log('tx: ' + (latest.self_hash ? latest.self_hash.slice(0, 14) : latest.type));
+  });
+})();
+
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+
+function init() {
+  // Optional: allow basis to be pinned for federation demos (MQTT topic namespace alignment).
+  const basisParam = new URLSearchParams(location.search).get('basis');
+  if (basisParam && /^0x[0-9a-fA-F]{8,}$/.test(basisParam)) {
+    state.basisHash = basisParam;
+    state.prevHash = null;
+  }
+
+  buildRings();
+  buildDocGraph();
+  buildESPList();
+  buildWordnetPanel();
+  initWhiteboardControls();
+  initNdjsonIngestControls();
+  initGatewayWS();
+
+  // Basis hash display
+  document.getElementById('basis-hash-text').textContent = state.basisHash;
+
+  // Initial commit
+  state.quadrants = updateQuadrants(0);
+  state.faces     = evaluateFaces(state.quadrants);
+  state.centroid  = computeCentroid(state.faces);
+  emitCommit('vertex_init');
+
+  // Select first doc
+  selectDoc('fano-garden-seed-kernel');
+
+  tick();
+}
+
+window.addEventListener('load', init);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('WESIRI Service Worker registered'))
+        .catch((err) => console.warn('WESIRI SW registration failed:', err));
+    });
+  }
+</script>
+
+</body>
+</html>
