@@ -320,6 +320,7 @@ Gateway helper endpoints:
 ```text
 POST /probe     (NDJSON or JSON → WS broadcast, and MQTT publish if enabled)
 GET  /probe/sim (emit one deterministic probe_sensor with w_hint=0.125)
+GET  /sse       (Server-Sent Events firehose; optional ?types=comma,list)
 ```
 
 ---

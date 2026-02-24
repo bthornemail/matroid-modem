@@ -1288,6 +1288,10 @@ function ingestRecord(record, source = 'unknown') {
   if (rec.lc === undefined || rec.lc === null) rec.lc = state.lc++;
   rec._source = rec._source || source;
 
+  // Canonicalize basis field: prefer basisHash (basisRef remains accepted as legacy alias).
+  if (rec.basisRef && !rec.basisHash) rec.basisHash = rec.basisRef;
+  if (rec.basisHash && !rec.basisRef) rec.basisRef = rec.basisHash;
+
   const claimedBasis = rec.basisHash || rec.basisRef;
   const activeBasis = state?.basisHash;
   if (claimedBasis && activeBasis && claimedBasis !== activeBasis) {

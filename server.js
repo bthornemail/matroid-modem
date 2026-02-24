@@ -14,6 +14,7 @@ const BASIS = process.env.BASIS || 'default';
 const BASIS_HASH = process.env.BASIS_HASH || null;
 const ENTRY_HTML = process.env.ENTRY_HTML || 'wesiri-modem-full-calibrated-autoqr.html';
 const MQTT_PUBLISH = process.env.MQTT_PUBLISH !== '0';
+const PUBLIC_DIR = path.join(__dirname, 'public');
 
 const TOPICS = [
   `semantic-basis/${BASIS}/commit`,
@@ -29,10 +30,10 @@ app.use(express.text({ type: '*/*', limit: '10mb' }));
 app.use(express.json({ limit: '10mb' }));
 
 // Serve all repo files (HTML, sw.js, manifest.json, icons, etc.)
-app.use(express.static(__dirname, { extensions: ['html'] }));
+app.use(express.static(PUBLIC_DIR, { extensions: ['html'] }));
 
 app.get('/', (_req, res) => {
-  res.sendFile(path.join(__dirname, ENTRY_HTML));
+  res.sendFile(path.join(PUBLIC_DIR, ENTRY_HTML));
 });
 
 function ndjsonLinesFromBody(body) {
@@ -54,10 +55,29 @@ const server = http.createServer(app);
 
 const wss = new WebSocketServer({ server, path: '/ws' });
 
+/** @type {Set<{res: import('http').ServerResponse, types: Set<string> | null}>} */
+const sseClients = new Set();
+
 function broadcast(text) {
   const msg = (typeof text === 'string') ? text : JSON.stringify(text);
   for (const ws of wss.clients) {
     if (ws.readyState === ws.OPEN) ws.send(msg);
+  }
+  // SSE fanout (best-effort)
+  let parsedType = null;
+  for (const client of sseClients) {
+    try {
+      if (client.types) {
+        if (parsedType === null) {
+          const rec = parseMaybeJson(msg);
+          parsedType = rec?.type ? String(rec.type) : '';
+        }
+        if (!client.types.has(parsedType)) continue;
+      }
+      client.res.write(`data: ${msg}\n\n`);
+    } catch {
+      // if write fails, connection is dead; it will be cleaned up on 'close'
+    }
   }
 }
 
@@ -68,6 +88,19 @@ function parseMaybeJson(s) {
   } catch {
     return null;
   }
+}
+
+function parseTypesFilter(req) {
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const raw = url.searchParams.get('types');
+  if (!raw) return null;
+  const types = new Set(
+    raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+  );
+  return types.size ? types : null;
 }
 
 function addHop(record, hop) {
@@ -136,11 +169,25 @@ mqttClient.on('connect', () => {
 mqttClient.on('message', (topic, payload) => {
   const text = payload.toString('utf8');
   // Smart wrap:
-  // - NDJSON payload (contains \n): forward as-is (line-split, keep purity).
+  // - NDJSON payload (contains \n): forward line-split; if a line is JSON, stamp topic + hop.
   // - Single JSON object: add topic provenance + hop stamp, then forward.
   // - Non-JSON: forward as-is.
   if (text.includes('\n')) {
-    for (const line of ndjsonLinesFromBody(text)) broadcast(line);
+    for (const line of ndjsonLinesFromBody(text)) {
+      const rec = parseMaybeJson(line);
+      if (rec) {
+        const withMeta = addHop(
+          {
+            ...rec,
+            _mqtt_topic: rec._mqtt_topic || topic,
+          },
+          'mqtt'
+        );
+        broadcast(JSON.stringify(withMeta));
+      } else {
+        broadcast(line);
+      }
+    }
   } else {
     const rec = parseMaybeJson(text);
     if (rec) {
@@ -166,17 +213,49 @@ mqttClient.on('message', (topic, payload) => {
 
 mqttClient.on('error', (e) => console.error('MQTT error:', e));
 
+app.get('/sse', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders?.();
+
+  const types = parseTypesFilter(req);
+  const client = { res, types };
+  sseClients.add(client);
+
+  // Initial status event (as a normal NDJSON line)
+  res.write(`data: ${JSON.stringify({ type: 'sse_status', t: Date.now(), ok: true, basis: BASIS, basisHash: BASIS_HASH, types: types ? Array.from(types) : null })}\n\n`);
+  res.write(`: connected\n\n`);
+
+  req.on('close', () => {
+    sseClients.delete(client);
+  });
+});
+
+// Keep-alive pings for SSE clients (prevents some proxies from closing idle streams).
+setInterval(() => {
+  for (const client of sseClients) {
+    try {
+      client.res.write(`: ping ${Date.now()}\n\n`);
+    } catch {}
+  }
+}, 25_000);
+
 app.post('/probe', (req, res) => {
   // Server-side probe emission endpoint (hardware/evidence domain).
   const body = req.is('application/json') ? req.body : String(req.body || '');
   const lines = ndjsonLinesFromBody(body);
   let published = 0;
   for (const line of lines) {
-    broadcast(line);
-    if (!MQTT_PUBLISH) continue;
     const rec = parseMaybeJson(line);
-    if (!rec) continue;
-    mqttClient.publish(mqttTopicForRecord(rec), line, { qos: 0 }, () => {});
+    const stamped = rec ? addHop(rec, 'http_probe') : null;
+    const outLine = stamped ? JSON.stringify(stamped) : line;
+    broadcast(outLine);
+    if (!MQTT_PUBLISH) continue;
+    if (!stamped) continue;
+    if (Array.isArray(stamped._hop) && stamped._hop.includes('mqtt')) continue; // loop prevention
+    mqttClient.publish(mqttTopicForRecord(stamped), outLine, { qos: 0 }, () => {});
     published++;
   }
   res.json({ ok: true, lines: lines.length, mqtt_published: published });
@@ -195,10 +274,11 @@ app.get('/probe/sim', (_req, res) => {
     unit: 'lux',
     w_hint: 0.125,
   };
-  const line = JSON.stringify(record);
+  const stamped = addHop(record, 'http_probe');
+  const line = JSON.stringify(stamped);
   broadcast(line);
-  if (MQTT_PUBLISH) mqttClient.publish(mqttTopicForRecord(record), line, { qos: 0 }, () => {});
-  res.json({ ok: true, record });
+  if (MQTT_PUBLISH) mqttClient.publish(mqttTopicForRecord(stamped), line, { qos: 0 }, () => {});
+  res.json({ ok: true, record: stamped });
 });
 
 server.listen(PORT, () => {
