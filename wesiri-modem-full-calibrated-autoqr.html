@@ -2681,11 +2681,91 @@ let __dc = null;
 // INIT
 // ═══════════════════════════════════════════════════════
 
+function extractBasisHashFromAny(input) {
+  const raw = String(input || '').trim();
+  if (!raw) return null;
+
+  if (/^0x[0-9a-fA-F]{8,}$/.test(raw)) return raw;
+
+  // Protocol handlers may pass an encoded URL; try both decoded and raw scanning.
+  const candidates = [raw];
+  try { candidates.unshift(decodeURIComponent(raw)); } catch {}
+
+  for (const c of candidates) {
+    const m = String(c).match(/0x[0-9a-fA-F]{8,}/);
+    if (m) return m[0];
+    try {
+      const u = new URL(c);
+      const q = u.searchParams.get('basis') || u.searchParams.get('basisHash') || u.searchParams.get('basisRef');
+      const qm = q ? String(q).match(/0x[0-9a-fA-F]{8,}/) : null;
+      if (qm) return qm[0];
+      const hm = String(u.hostname || '').match(/0x[0-9a-fA-F]{8,}/);
+      if (hm) return hm[0];
+      const pm = String(u.pathname || '').match(/0x[0-9a-fA-F]{8,}/);
+      if (pm) return pm[0];
+    } catch {}
+  }
+  return null;
+}
+
+function handleSynsetRpcProtocolInvocation(input) {
+  const raw = String(input || '').trim();
+  if (!raw) return;
+
+  let decoded = raw;
+  try { decoded = decodeURIComponent(raw); } catch {}
+
+  let w = null;
+  let params = {};
+  let target = null;
+
+  try {
+    const u = new URL(decoded);
+    target = u.searchParams.get('target') || u.searchParams.get('line') || u.searchParams.get('call') || null;
+    const wStr = u.searchParams.get('w') || u.searchParams.get('w_hint') || null;
+    if (wStr !== null) w = Number(wStr);
+    params = Object.fromEntries(u.searchParams.entries());
+
+    // If invocation carries a basis hash and we are not pinned yet, adopt it.
+    const basisFromRpc = extractBasisHashFromAny(u.searchParams.get('basisHash') || u.searchParams.get('basis') || '');
+    if (!state.__basisPinned && basisFromRpc) {
+      state.basisHash = basisFromRpc;
+      state.prevHash = null;
+      state.__basisPinned = true;
+      const basisText = document.getElementById('basis-hash-text');
+      if (basisText) basisText.textContent = state.basisHash;
+      try { renderHandshakeUI(); } catch {}
+    }
+  } catch {
+    // Fallback: scan raw string for w=... patterns.
+    const m = decoded.match(/[?&]w(?:_hint)?=([0-9.]+)/i);
+    if (m) w = Number(m[1]);
+  }
+
+  const ww = clamp01(w ?? 0.125);
+  emitLocalRecord({
+    type: 'synset_call',
+    id: stableId('synset_call', { rpc: decoded, basisHash: state.basisHash }),
+    call_id: stableId('call', { rpc: decoded, basisHash: state.basisHash }),
+    basisRef: state.basisHash,
+    basisHash: state.basisHash,
+    target_coord: { x: 0.62, y: 0.58, z: 0.56, w: ww },
+    intent_delta: {
+      rpc: decoded,
+      target,
+      params,
+      provenance: { protocol: 'web+synsetrpc' },
+    },
+  }, 'protocol_handler');
+}
+
 function init() {
   // Optional: allow basis to be pinned for federation demos (MQTT topic namespace alignment).
-  const basisParam = new URLSearchParams(location.search).get('basis');
-  if (basisParam && /^0x[0-9a-fA-F]{8,}$/.test(basisParam)) {
-    state.basisHash = basisParam;
+  const qs = new URLSearchParams(location.search);
+  const basisParam = qs.get('basis');
+  const basisHash = extractBasisHashFromAny(basisParam);
+  if (basisHash) {
+    state.basisHash = basisHash;
     state.prevHash = null;
     state.__basisPinned = true;
   }
@@ -2700,6 +2780,10 @@ function init() {
 
   // Basis hash display
   document.getElementById('basis-hash-text').textContent = state.basisHash;
+
+  // Protocol handler invocation support (PWA-first; no server required).
+  const rpcParam = qs.get('rpc');
+  if (rpcParam) handleSynsetRpcProtocolInvocation(rpcParam);
 
   // Initial commit
   state.quadrants = updateQuadrants(0);

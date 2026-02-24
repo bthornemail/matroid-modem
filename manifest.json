@@ -21,5 +21,15 @@
   "theme_color": "#c9b99a",
   "orientation": "landscape",
   "categories": ["productivity", "utilities"],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "protocol_handlers": [
+    {
+      "protocol": "web+synsetrpc",
+      "url": "./wesiri-modem-full-calibrated-autoqr.html?rpc=%s"
+    },
+    {
+      "protocol": "web+semanticbasis",
+      "url": "./wesiri-modem-full-calibrated-autoqr.html?basis=%s"
+    }
+  ]
 }
