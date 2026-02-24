@@ -11,6 +11,7 @@ const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8787;
 const MQTT_URL = process.env.MQTT_URL || 'mqtt://127.0.0.1:1883';
 const BASIS = process.env.BASIS || 'default';
+const BASIS_HASH = process.env.BASIS_HASH || null;
 const ENTRY_HTML = process.env.ENTRY_HTML || 'wesiri-modem-full-calibrated-autoqr.html';
 const MQTT_PUBLISH = process.env.MQTT_PUBLISH !== '0';
 
@@ -69,6 +70,15 @@ function parseMaybeJson(s) {
   }
 }
 
+function addHop(record, hop) {
+  const next = { ...record };
+  const prev = next._hop;
+  const arr = Array.isArray(prev) ? prev.slice() : (typeof prev === 'string' ? [prev] : []);
+  if (!arr.includes(hop)) arr.push(hop);
+  next._hop = arr;
+  return next;
+}
+
 function mqttTopicForRecord(record) {
   const type = record?.type;
   if (!type) return `semantic-basis/${BASIS}/commit`;
@@ -90,6 +100,7 @@ wss.on('connection', (ws, req) => {
     t: Date.now(),
     ok: true,
     basis: BASIS,
+    basisHash: BASIS_HASH,
     topics: TOPICS,
     remote: req.socket.remoteAddress,
   }));
@@ -99,11 +110,14 @@ wss.on('connection', (ws, req) => {
     const text = buf.toString('utf8');
     const lines = ndjsonLinesFromBody(text);
     for (const line of lines) {
-      broadcast(line);
-      if (!MQTT_PUBLISH) continue;
       const rec = parseMaybeJson(line);
-      if (!rec) continue;
-      mqttClient.publish(mqttTopicForRecord(rec), line, { qos: 0 }, () => {});
+      const stamped = rec ? addHop(rec, 'ws') : null;
+      const outLine = stamped ? JSON.stringify(stamped) : line;
+      broadcast(outLine);
+      if (!MQTT_PUBLISH) continue;
+      if (!stamped) continue;
+      if (Array.isArray(stamped._hop) && stamped._hop.includes('mqtt')) continue; // loop prevention
+      mqttClient.publish(mqttTopicForRecord(stamped), outLine, { qos: 0 }, () => {});
     }
   });
 });
@@ -121,8 +135,27 @@ mqttClient.on('connect', () => {
 
 mqttClient.on('message', (topic, payload) => {
   const text = payload.toString('utf8');
-  // Forward as-is; browser splits/parses as NDJSON lines.
-  for (const line of ndjsonLinesFromBody(text)) broadcast(line);
+  // Smart wrap:
+  // - NDJSON payload (contains \n): forward as-is (line-split, keep purity).
+  // - Single JSON object: add topic provenance + hop stamp, then forward.
+  // - Non-JSON: forward as-is.
+  if (text.includes('\n')) {
+    for (const line of ndjsonLinesFromBody(text)) broadcast(line);
+  } else {
+    const rec = parseMaybeJson(text);
+    if (rec) {
+      const withMeta = addHop(
+        {
+          ...rec,
+          _mqtt_topic: rec._mqtt_topic || topic,
+        },
+        'mqtt'
+      );
+      broadcast(JSON.stringify(withMeta));
+    } else {
+      broadcast(text);
+    }
+  }
 
   // Optional lightweight envelope for debugging/observability.
   // Keep it off by default to preserve pure NDJSON streams.
@@ -155,7 +188,7 @@ app.get('/probe/sim', (_req, res) => {
     type: 'probe_sensor',
     t: Date.now(),
     basisRef: BASIS,
-    basisHash: process.env.BASIS_HASH || null,
+    basisHash: BASIS_HASH,
     deviceId: 'sim-esp32-s3-01',
     sensor: 'lux',
     value: 412,

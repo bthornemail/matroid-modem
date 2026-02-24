@@ -1426,7 +1426,26 @@ function initGatewayWS() {
     const ws = new WebSocket(url);
 
     ws.onopen = () => ingestRecord({ type: 'gateway_ws', t: Date.now(), status: 'open', url }, 'gateway_ws');
-    ws.onmessage = (e) => ingestNdjsonText(e.data, 'gateway_ws');
+    ws.onmessage = (e) => {
+      const data = String(e.data ?? '');
+      // ws_status can carry a canonical basisHash for auto-lock (when no ?basis=... is provided).
+      try {
+        const obj = JSON.parse(data);
+        if (obj && obj.type === 'ws_status') {
+          if (!state.__basisPinned && obj.basisHash && /^0x[0-9a-fA-F]{8,}$/.test(obj.basisHash)) {
+            state.basisHash = obj.basisHash;
+            state.prevHash = null;
+            state.__basisPinned = true;
+            const basisText = document.getElementById('basis-hash-text');
+            if (basisText) basisText.textContent = state.basisHash;
+            try { renderHandshakeUI(); } catch {}
+          }
+          ingestRecord(obj, 'gateway_ws');
+          return;
+        }
+      } catch {}
+      ingestNdjsonText(data, 'gateway_ws');
+    };
     ws.onerror = () => ingestRecord({ type: 'gateway_ws', t: Date.now(), status: 'error' }, 'gateway_ws');
     ws.onclose = () => ingestRecord({ type: 'gateway_ws', t: Date.now(), status: 'closed' }, 'gateway_ws');
 
@@ -2668,6 +2687,7 @@ function init() {
   if (basisParam && /^0x[0-9a-fA-F]{8,}$/.test(basisParam)) {
     state.basisHash = basisParam;
     state.prevHash = null;
+    state.__basisPinned = true;
   }
 
   buildRings();
