@@ -155,5 +155,5 @@ LED at grid position `(row, col)` on tile `(tx, ty)` lights with color of quadra
 
 - New record types: `synset_call`, `synset_reply`, `synset_error`
 - Entrainment scheduler now emits these at every transition where a pending call queue exists.
-- `stream.js consume` treats them as first-class canvas nodes (with live color updates).
+- `src/stream.js consume` treats them as first-class canvas nodes (with live color updates).
 - ESP32 firmware listens on MQTT topic `semantic-basis/synset-rpc` and renders directly to column 2 (or full panel in local-simplex mode).

@@ -107,8 +107,8 @@ Tiling is mechanically modular (3D-printed frames) and electrically parallel (Wi
 
 ## 4. Software Pipeline
 
-- **Entrainment Scheduler** (`entrain.js`): generates NDJSON commits from spin cycle
-- **Streaming Layer** (`stream.js`): NDJSON → JSON Canvas or SAB writes
+- **Entrainment Scheduler** (`src/entrain.js`): generates NDJSON commits from spin cycle
+- **Streaming Layer** (`src/stream.js`): NDJSON → JSON Canvas or SAB writes
 - **Consumers**: browser dashboard, AWK/POSIX, Haskell eDSL, embedded firmware
 - **Basis Declaration**: versioned WordNet hash + corpus Merkle root
 
@@ -130,8 +130,8 @@ The Simplex Blackboard transforms the Semantic Basis Protocol from abstract spec
 ## References
 
 - Semantic Basis Protocol v0.2 (internal specification document)
-- Entrainment Scheduler Implementation (entrain.js)
-- NDJSON Streaming Layer (stream.js)
+- Entrainment Scheduler Implementation (src/entrain.js)
+- NDJSON Streaming Layer (src/stream.js)
 - Patterns & Entrainment Logs (patterns-entrained.ndjson, entrained.canvas)
 - Related geometric semantics: icosahedral models in cognitive linguistics and knowledge representation
 

@@ -62,7 +62,7 @@ Defined in:
 
 ### 2. Multigraph Builder
 
-`semantic-multigraph-builder.js`
+`src/semantic-multigraph-builder.js`
 
 
 * Expands WordNet hypernym closures
@@ -73,7 +73,7 @@ Defined in:
 
 ### 3. NDJSON Streaming Layer
 
-`stream.js`
+`src/stream.js`
 
 
 Axioms:
@@ -93,7 +93,7 @@ Produces:
 
 ### 4. Entrainment Scheduler
 
-`entrain.js`
+`src/entrain.js`
 
 
 * 720-tick spin cycle
@@ -155,7 +155,7 @@ Follow this exactly.
 
 ```bash
 export WORDNET_DB=/path/to/wordnet.sqlite
-node semantic-multigraph-builder.js > multigraph.json
+node src/semantic-multigraph-builder.js > multigraph.json
 ```
 
 This produces:
@@ -171,13 +171,13 @@ Without this, you do not have a semantic space.
 ## 🔹 STEP 2 — Emit NDJSON Stream
 
 ```bash
-node stream.js emit multigraph.json > stream.ndjson
+node src/stream.js emit multigraph.json > stream.ndjson
 ```
 
 Or pipe directly:
 
 ```bash
-node stream.js emit multigraph.json | node stream.js consume > canvas.canvas
+node src/stream.js emit multigraph.json | node src/stream.js consume > canvas.canvas
 ```
 
 You now have:
@@ -190,7 +190,7 @@ You now have:
 ## 🔹 STEP 3 — Run Entrainment
 
 ```bash
-node entrain.js --basis <basisHash> --cycles 1 > log.ndjson
+node src/entrain.js --basis <basisHash> --cycles 1 > log.ndjson
 ```
 
 This produces:
@@ -207,8 +207,8 @@ Now you have a live semantic spin cycle.
 ## 🔹 STEP 4 — Project to Canvas
 
 ```bash
-node entrain.js --basis <basisHash> \
-  | node stream.js consume \
+node src/entrain.js --basis <basisHash> \
+  | node src/stream.js consume \
   > entrained.canvas
 ```
 
