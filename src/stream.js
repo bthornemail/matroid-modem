@@ -55,11 +55,9 @@
  *   The \n boundary = the Atomics commit point.
  */
 
-'use strict';
-
-const fs   = require('fs');
-const path = require('path');
-const readline = require('readline');
+import fs from 'fs';
+import path from 'path';
+import readline from 'readline';
 
 // ─────────────────────────────────────────────────────────────
 // RECORD SCHEMA
@@ -699,13 +697,13 @@ async function main() {
     await consume(inStream, process.stdout);
 
   } else if (command === 'write-awk') {
-    const awkPath = inputFile || 'process.awk';
+    const awkPath = inputFile || 'bin/process.awk';
     fs.writeFileSync(awkPath, AWK_COMPANION);
     fs.chmodSync(awkPath, 0o755);
     process.stderr.write(`AWK companion written to ${awkPath}\n`);
 
   } else if (command === 'write-haskell') {
-    const hsPath = inputFile || 'SemanticBasis/Stream.hs';
+    const hsPath = inputFile || 'bin/Stream.hs';
     fs.mkdirSync(path.dirname(hsPath), { recursive: true });
     fs.writeFileSync(hsPath, HASKELL_EDSL_STUB);
     process.stderr.write(`Haskell eDSL stub written to ${hsPath}\n`);
@@ -717,15 +715,15 @@ Semantic Basis Protocol — NDJSON ↔ JSON Canvas Stream Layer
 Commands:
   emit <multigraph.json>     Emit NDJSON stream to stdout
   consume [input.ndjson]     Consume NDJSON, write JSON Canvas to stdout
-  write-awk [process.awk]    Write POSIX AWK consumer companion
-  write-haskell [Stream.hs]  Write Haskell eDSL type stubs
+  write-awk [bin/process.awk]    Write POSIX AWK consumer companion
+  write-haskell [bin/Stream.hs]  Write Haskell eDSL type stubs
 
 Examples:
-  node stream.js emit semantic-multigraph.json > stream.ndjson
-  node stream.js consume stream.ndjson > output.canvas
-  node stream.js emit semantic-multigraph.json | node stream.js consume > output.canvas
-  node stream.js emit semantic-multigraph.json | awk -f process.awk
-  node stream.js write-awk && node stream.js emit m.json | awk -f process.awk
+  node src/stream.js emit semantic-multigraph.json > stream.ndjson
+  node src/stream.js consume stream.ndjson > output.canvas
+  node src/stream.js emit semantic-multigraph.json | node src/stream.js consume > output.canvas
+  node src/stream.js emit semantic-multigraph.json | awk -f bin/process.awk
+  node src/stream.js write-awk && node src/stream.js emit m.json | awk -f bin/process.awk
 `);
     process.exit(1);
   }
@@ -736,4 +734,4 @@ main().catch(err => {
   process.exit(1);
 });
 
-module.exports = { emit, consume, LAYOUT, RECORD_TYPE, AWK_COMPANION, HASKELL_EDSL_STUB };
+export { emit, consume, LAYOUT, RECORD_TYPE, AWK_COMPANION, HASKELL_EDSL_STUB };

@@ -105,7 +105,7 @@ Produces:
 
 ### 5. Haskell eDSL (Pure Kernel)
 
-`Stream.hs`
+`bin/Stream.hs`
 
 
 Defines:
@@ -516,3 +516,72 @@ You have:
 * A physical embodiment pathway
 
 You have built the first bootable semantic portal.
+
+---
+
+# 🔟 Release Flow (0.1.x)
+
+Use this sequence to validate and package a deterministic release artifact.
+
+## 1) Install
+
+```bash
+npm i
+```
+
+## 2) Build Checks
+
+```bash
+npm run build
+```
+
+## 3) Generate Template Provenance
+
+```bash
+npm run templates:manifest
+```
+
+This writes:
+
+```text
+public/docs/narrative-series/templates.manifest.json
+```
+
+## 4) (Optional) Compile + Ingest Demo NDJSON
+
+Start gateway:
+
+```bash
+BASIS=founding-v1 BASIS_HASH=0xdeadbeef MQTT_URL=mqtt://127.0.0.1:1883 npm start
+```
+
+Compile demo:
+
+```bash
+npm run demo:compile
+```
+
+Ingest demo:
+
+```bash
+npm run demo:ingest
+```
+
+Or run both:
+
+```bash
+npm run demo:founding
+```
+
+## 5) Pack
+
+```bash
+npm pack --dry-run
+npm pack
+```
+
+Expected output tarball pattern:
+
+```text
+wesiri-gateway-*.tgz
+```

@@ -1,10 +1,60 @@
 {
   "name": "wesiri-gateway",
-  "private": true,
+  "version": "0.1.1",
+  "description": "PWA-first semantic portal gateway with NDJSON ingestion, WS/SSE/MQTT bridge, and SynsetRPC tooling.",
+  "private": false,
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bthornemail/matroid-modem.git"
+  },
+  "homepage": "https://github.com/bthornemail/matroid-modem",
+  "bugs": {
+    "url": "https://github.com/bthornemail/matroid-modem/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "ndjson",
+    "mqtt",
+    "websocket",
+    "pwa",
+    "semantic"
+  ],
+  "bin": {
+    "wesiri-gateway": "bin/wesiri-gateway.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
+  "files": [
+    "src/**",
+    "public/index.html",
+    "public/manifest.json",
+    "public/sw.js",
+    "public/*.html",
+    "public/*.png",
+    "public/docs/narrative-series/America Constitution Series/**",
+    "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/**",
+    "public/docs/narrative-series/README.md",
+    "public/docs/narrative-series/templates.manifest.json",
+    "scripts/**",
+    "bin/**",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "scripts": {
     "start": "node src/server.js",
-    "civic:compile": "node scripts/civic-compiler.js"
+    "build": "npm run build:check",
+    "build:check": "node -c src/server.js && node -c src/stream.js && node -c src/entrain.js && node -c src/semantic-multigraph-builder.js && node scripts/civic-compiler.js --help > /dev/null",
+    "civic:compile": "node scripts/civic-compiler.js",
+    "templates:manifest": "node scripts/generate-templates-manifest.js",
+    "demo:compile": "node scripts/demo-founding-compile.js",
+    "demo:ingest": "node scripts/demo-ingest.js",
+    "demo:founding": "npm run demo:compile && npm run demo:ingest"
   },
   "dependencies": {
     "express": "^4.19.2",

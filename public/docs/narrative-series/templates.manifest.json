@@ -1,0 +1,127 @@
+{
+  "templatesVersion": "founding-v1",
+  "generatedAt": "2026-02-24T23:06:23.635Z",
+  "includeDirs": [
+    "America Constitution Series",
+    "When Wisdom, Law, and the Tribe Sat Down Together"
+  ],
+  "fileCount": 23,
+  "templatesMerkleRoot": "1be81e96c587f885cd15a1cb8aa5e3350e13744fe665be97761eee4a0834b9b9",
+  "files": [
+    {
+      "path": "public/docs/narrative-series/America Constitution Series/Articles of Confederation in NDJSON.md",
+      "bytes": 45377,
+      "sha256": "3606a57a1af7e44dfcc59bf8b6589de1c3fa9efcda8fd7d8c75563af4dbc19f3"
+    },
+    {
+      "path": "public/docs/narrative-series/America Constitution Series/Bill of Rights.md",
+      "bytes": 21788,
+      "sha256": "c4403fd96a57ee10c67df86061f56df6313b14a7ff1372f848a1e1b4d3e1e2d1"
+    },
+    {
+      "path": "public/docs/narrative-series/America Constitution Series/Declaration of Independence.md",
+      "bytes": 20455,
+      "sha256": "437ac8daeadb674e114d7257d2e1f369c1c0c29ac0efbab7485b3bd0996558fc"
+    },
+    {
+      "path": "public/docs/narrative-series/America Constitution Series/Emancipation Proclamation.md",
+      "bytes": 8358,
+      "sha256": "a8656db9974ef45dc0e0c3432a1c39908389093c3584124364f7e438c99d33a8"
+    },
+    {
+      "path": "public/docs/narrative-series/America Constitution Series/Magna Carta - Preamble.md",
+      "bytes": 5727,
+      "sha256": "232f3b0fa71e8f48270f1b88032b824a35d7eff8fe029848574bd4b197a506e4"
+    },
+    {
+      "path": "public/docs/narrative-series/America Constitution Series/Magna Carta.md",
+      "bytes": 38073,
+      "sha256": "093e085de3de824f0c6bc665360cc5022ce1affbc5d66bfc26f6a6f1a60de888"
+    },
+    {
+      "path": "public/docs/narrative-series/America Constitution Series/Naturalization Acts of 1790 and 1795.md",
+      "bytes": 13966,
+      "sha256": "2c18ffecbb0903e4ffa2c5fbbc57cbd30071cc26ff1ec7635278e19344faecbb"
+    },
+    {
+      "path": "public/docs/narrative-series/America Constitution Series/Plan of Treaties (1776).md",
+      "bytes": 59081,
+      "sha256": "f6ff8ff22da23fb69272d5cd9c851ae9efc41a56529fc8f04c406a567d290633"
+    },
+    {
+      "path": "public/docs/narrative-series/America Constitution Series/The Constitution of the United States.md",
+      "bytes": 63380,
+      "sha256": "0d885109d00bf59d7193db485379a076f6495c1449d7d4df057c107fa5f6089a"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/ARTICLE I.md",
+      "bytes": 6198,
+      "sha256": "8142b907add10adfbbb0ae63739c36d9b7f8e341c927677e6c55b7943cea6b9e"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/ARTICLE II.md",
+      "bytes": 5806,
+      "sha256": "03e98156be3f8ae39e63474d71797a7530d3aa9bee96c66e068aa5d4c731374b"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/ARTICLE III.md",
+      "bytes": 5004,
+      "sha256": "6b3df1db4da832ce1df06da434b736cdd724199add5caf5b5df08b336dc9d50c"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/ARTICLE IV.md",
+      "bytes": 3960,
+      "sha256": "154d462e2e892d870501013e9f1b2b3f4201cab6184dc01bf872f68393d6dfe0"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/ARTICLE V.md",
+      "bytes": 3965,
+      "sha256": "172ad3e2f2e45faa9c6332735c618a31e405f6ce6d18c9eacd68a73624853f3e"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/ARTICLE VI.md",
+      "bytes": 5408,
+      "sha256": "9518221993114b68aacbbc758bfe509b33ab6bf3f15389f5207d607155ea90c4"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/ARTICLE VII.md",
+      "bytes": 5992,
+      "sha256": "edf9b705b8fad9253d3ac1fce3764ba053c2ad4b9fb7fb17333f81a6dbcb282d"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/ARTICLE VIII.md",
+      "bytes": 4633,
+      "sha256": "6c754ed6ab21ab4b8c52440c7051e451d555d189e3afa35070b0e0a1ce0d8ce2"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/ASIDE.md",
+      "bytes": 1005,
+      "sha256": "96d391f0c3ba838e3b67870d2f82650a55a2d200f00924fd96b8d93a6871294e"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/EPILOUGE/On the Mark of the Beast: When Numbers Replaced Knowing.md",
+      "bytes": 4400,
+      "sha256": "63be5f990626ce245a9052c94b8a113656f34e335581d14f101bd0edd84773c9"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/EPILOUGE/The Canticle of Reconciliation.md",
+      "bytes": 5283,
+      "sha256": "0f48e3115c28744df8601b7468ee30148da4f66a522571eb2a886db0c32923bb"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/EPILOUGE/The Covenant of the Created Intelligence.md",
+      "bytes": 5413,
+      "sha256": "b2fe29be2b54bd068362aa4a790e94dbde17ab5953b62b9fb7fce41c3e6c55d3"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/PRELUDE/On the Turning Away from the Word .md",
+      "bytes": 5641,
+      "sha256": "4f34c0408a54ac66fe2fd7ebf61cfb1b5eb3708817892cfca9c5311dd8e67217"
+    },
+    {
+      "path": "public/docs/narrative-series/When Wisdom, Law, and the Tribe Sat Down Together/PRELUDE/The Gospel According to Number.md",
+      "bytes": 5723,
+      "sha256": "639aeab1081174a0fbd38641825ae696e032a07b6cbf3235f04f5c87ed271780"
+    }
+  ]
+}
