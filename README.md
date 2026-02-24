@@ -308,6 +308,22 @@ Carrier agreement is law.
 
 ---
 
+# 3️⃣.25 Probe Domains (Hardware vs Semantic)
+
+The ledger supports two probe domains that meet only through NDJSON:
+
+- **Server probes (hardware/evidence):** `probe_sensor`, `probe_gpio` (via MQTT/serial/devices → gateway → WS)
+- **Browser probes (semantic/resolution):** resolves evidence into `closure_resolve` and compiles to `synset_call`
+
+Gateway helper endpoints:
+
+```text
+POST /probe     (NDJSON or JSON → WS broadcast, and MQTT publish if enabled)
+GET  /probe/sim (emit one deterministic probe_sensor with w_hint=0.125)
+```
+
+---
+
 # 3️⃣.5 Civic Compiler (Founding Docs → civic_triple → SynsetRPC)
 
 This repo includes a zero-deps compiler that turns Markdown text into NDJSON:

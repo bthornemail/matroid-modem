@@ -834,6 +834,26 @@ function hashStr(s) {
          ((h ^ 0xdeadbeef) >>> 0).toString(16).padStart(8,'0');
 }
 
+function emitLocalRecord(record, source = 'local') {
+  if (!record || typeof record !== 'object') return null;
+
+  const rec = { ...record };
+  if (rec.t === undefined || rec.t === null) rec.t = Date.now();
+  if (rec.lc === undefined || rec.lc === null) rec.lc = state.lc++;
+  rec._source = rec._source || source;
+
+  // Best-effort chaining for locally-emitted records.
+  rec.prev_hash = rec.prev_hash ?? state.prevHash ?? null;
+  if (!rec.self_hash) {
+    rec.self_hash = hashStr(JSON.stringify({ ...rec, self_hash: null, sig: null }));
+  }
+  if (rec.sig === undefined) rec.sig = hashStr(`sig:${rec.self_hash}:${rec.basisHash || state.basisHash}`);
+  state.prevHash = rec.self_hash;
+
+  ingestRecord(rec, source);
+  return rec;
+}
+
 // ═══════════════════════════════════════════════════════
 // EPISTEMIC SQUARE MATH (mirrors epistemic-square.js)
 // ═══════════════════════════════════════════════════════
@@ -1276,6 +1296,9 @@ function ingestRecord(record, source = 'unknown') {
   }
 
   appendStream(rec);
+
+  // Browser-side probe domain: resolve evidence → closure → SynsetRPC
+  maybeResolveClosureFromRecord(rec);
 }
 
 function ingestNdjsonText(text, source = 'ndjson') {
@@ -1290,6 +1313,97 @@ function ingestNdjsonText(text, source = 'ndjson') {
       ingestRecord({ type: 'raw', raw: s }, source);
     }
   }
+}
+
+// ═══════════════════════════════════════════════════════
+// BROWSER PROBES → CLOSURE RESOLUTION (semantic domain)
+// ═══════════════════════════════════════════════════════
+
+function stableId(prefix, obj) {
+  return `${prefix}-${hashStr(JSON.stringify(obj))}`;
+}
+
+function resolveClosureFromEvidence(record) {
+  const basisHash = record.basisHash || record.basisRef || state.basisHash;
+  const wHint = (record.w_hint !== undefined && record.w_hint !== null)
+    ? clamp01(record.w_hint)
+    : (parseInt(hashStr(`${record.deviceId || ''}:${record.sensor || record.type}`).slice(-2), 16) % 8) / 8;
+
+  const sensor = String(record.sensor || record.signal || record.type || 'unknown');
+
+  // Deterministic mapping: sensors route primarily through Metatron (witness/measurement).
+  const semantic = {
+    character: 'Enoch/Metatron',
+    face: 'centroid',
+    synset_hint: sensor === 'lux' ? 'light.n.01' : 'measure.v.01',
+    utterance: `record ${sensor}`,
+  };
+
+  // Coordinate stub: keep it stable and matroid-friendly (pure, explainable).
+  const h = hashStr(`${sensor}:${record.value ?? ''}:${record.unit ?? ''}:${record.deviceId ?? ''}`);
+  const jitter = (parseInt(h.slice(-2), 16) / 255) * 0.08; // 0..0.08
+  const coord = {
+    x: clamp01(0.62 + jitter),
+    y: clamp01(0.41 + jitter / 2),
+    z: clamp01(0.58 + jitter / 3),
+    w: wHint,
+  };
+
+  const result = {
+    closure_id: `closure:${sensor}@v1`,
+    coord,
+    confidence: clamp01(0.86 - jitter / 2),
+    drift: Number((0.08 + jitter / 2).toFixed(3)),
+  };
+
+  return { basisHash, semantic, result };
+}
+
+function maybeResolveClosureFromRecord(record) {
+  if (!record || typeof record !== 'object') return;
+  if (record._quarantined) return;
+
+  if (record.type !== 'probe_sensor' && record.type !== 'probe_gpio') return;
+
+  // Avoid recursive resolution loops.
+  if (record._source === 'resolver') return;
+
+  const resolve_id = stableId('resolve', { id: record.id, t: record.t, type: record.type });
+  const { basisHash, semantic, result } = resolveClosureFromEvidence(record);
+
+  emitLocalRecord({
+    type: 'closure_resolve',
+    id: stableId('closure_resolve', { resolve_id, basisHash }),
+    resolve_id,
+    basisRef: record.basisRef || record.basisHash || state.basisHash,
+    basisHash,
+    evidence: {
+      ref: `${record.type}:${record.deviceId || 'unknown'}:${record.sensor || record.pin || 'unknown'}`,
+      signal: record.sensor || record.signal || 'unknown',
+      value: record.value,
+      unit: record.unit,
+    },
+    semantic,
+    result,
+  }, 'resolver');
+
+  // Compile into SynsetRPC traffic (process-sharing).
+  emitLocalRecord({
+    type: 'synset_call',
+    id: stableId('synset_call', { resolve_id, basisHash }),
+    call_id: stableId('call', { resolve_id, basisHash }),
+    basisRef: record.basisRef || record.basisHash || state.basisHash,
+    basisHash,
+    target_coord: result.coord,
+    intent_delta: {
+      resolve_id,
+      evidence: { type: record.type, deviceId: record.deviceId, sensor: record.sensor, pin: record.pin },
+      semantic,
+      closure_id: result.closure_id,
+      confidence: result.confidence,
+      drift: result.drift,
+    },
+  }, 'resolver');
 }
 
 function initNdjsonIngestControls() {
