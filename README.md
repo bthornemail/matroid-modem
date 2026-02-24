@@ -220,10 +220,10 @@ You now see the spin geometry.
 
 ## 🔹 STEP 5 — Open the Portal
 
-Serve locally:
+Serve locally (static):
 
 ```bash
-npx serve .
+npx serve public
 ```
 
 Open:
@@ -263,6 +263,12 @@ Open:
 
 ```text
 http://127.0.0.1:8787/
+```
+
+Portal entry:
+
+```text
+http://127.0.0.1:8787/wesiri-modem-full-calibrated-autoqr.html
 ```
 
 Optional: pin the portal basis for federation demos:
@@ -336,7 +342,7 @@ Compile a document:
 
 ```bash
 npm run civic:compile -- \
-  "narrative-series/America Constitution Series/Declaration of Independence.md" \
+  "docs/narrative-series/America Constitution Series/Declaration of Independence.md" \
   --basis founding-v1 \
   --emit-synset \
   --max 40 \
@@ -356,7 +362,7 @@ Note: to avoid quarantine, make sure `basisHash` matches the portal basis (`?bas
 
 ```bash
 npm run civic:compile -- \
-  "narrative-series/America Constitution Series/Declaration of Independence.md" \
+  "docs/narrative-series/America Constitution Series/Declaration of Independence.md" \
   --basis founding-v1 \
   --basisHash 0xdeadbeef \
   --emit-synset \

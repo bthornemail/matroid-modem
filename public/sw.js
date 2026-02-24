@@ -7,6 +7,7 @@ const RUNTIME = `wesiri-runtime-${VERSION}`;
 const START_URL = './wesiri-modem-full-calibrated-autoqr.html';
 
 const PRECACHE_URLS = [
+  './index.html',
   START_URL,
   './manifest.json',
   './icon-192.png',
