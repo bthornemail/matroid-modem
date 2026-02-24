@@ -244,6 +244,43 @@ The browser is now a modem.
 
 ---
 
+# 2️⃣.5 Gateway Runtime (Express + WS + MQTT)
+
+To receive live device traffic (MQTT) without shipping MQTT libs into the browser:
+
+- Express serves the portal files
+- WebSocket `/ws` pushes NDJSON into the browser
+- MQTT subscriber forwards payloads as NDJSON text
+
+Install + run:
+
+```bash
+npm i
+MQTT_URL=mqtt://127.0.0.1:1883 BASIS=default npm start
+```
+
+Open:
+
+```text
+http://127.0.0.1:8787/
+```
+
+Optional: pin the portal basis for federation demos:
+
+```text
+http://127.0.0.1:8787/?basis=0xdeadbeef
+```
+
+Test without MQTT (HTTP rebroadcast → WS → ingest funnel):
+
+```bash
+curl -X POST http://127.0.0.1:8787/ingest \
+  -H 'content-type: text/plain' \
+  --data-binary '{"type":"synset_call","basisHash":"0xdeadbeef","target_coord":{"w":0.125}}\n'
+```
+
+---
+
 # 3️⃣ SynsetRPC Runtime
 
 SynsetRPC messages flow as NDJSON records:
@@ -268,6 +305,47 @@ All converge into the same basis validator.
 If basisRef mismatches → quarantine.
 
 Carrier agreement is law.
+
+---
+
+# 3️⃣.5 Civic Compiler (Founding Docs → civic_triple → SynsetRPC)
+
+This repo includes a zero-deps compiler that turns Markdown text into NDJSON:
+
+- `civic_triple` records (SPO + quadrant + character/face tags)
+- optional `synset_call` records (stub coords) for immediate projection to the whiteboard
+
+Compile a document:
+
+```bash
+npm run civic:compile -- \
+  "narrative-series/America Constitution Series/Declaration of Independence.md" \
+  --basis founding-v1 \
+  --emit-synset \
+  --max 40 \
+  > civic.ndjson
+```
+
+Then ingest:
+
+- paste `civic.ndjson` into the portal ingest box, or
+- send it to the gateway:
+
+```bash
+curl -X POST http://127.0.0.1:8787/ingest -H 'content-type: text/plain' --data-binary @civic.ndjson
+```
+
+Note: to avoid quarantine, make sure `basisHash` matches the portal basis (`?basis=...`). You can set it explicitly:
+
+```bash
+npm run civic:compile -- \
+  "narrative-series/America Constitution Series/Declaration of Independence.md" \
+  --basis founding-v1 \
+  --basisHash 0xdeadbeef \
+  --emit-synset \
+  --max 40 \
+  > civic.ndjson
+```
 
 ---
 
