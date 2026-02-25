@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#c9b99a">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="./icon-192.png">
@@ -1615,7 +1616,8 @@ state.demodCalibration = state.demodCalibration || {
 };
 
 function buildHandshakePayload() {
-  const firstCommit = window.__streamRecords.find(r => r && (r.type === 'commit' || r.type === 'CommitEvent'));
+  const records = Array.isArray(window.__streamRecords) ? window.__streamRecords : [];
+  const firstCommit = records.find((r) => r && (r.type === 'commit' || r.type === 'CommitEvent'));
   return {
     v: 1,
     type: 'basis_handshake',
@@ -2804,7 +2806,13 @@ function init() {
 window.addEventListener('load', init);
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script type="module">
+  import QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm';
+  window.QRCode = QRCode;
+  if (typeof window.renderHandshakeUI === 'function') {
+    window.renderHandshakeUI();
+  }
+</script>
 
 <script>
   if ('serviceWorker' in navigator) {
