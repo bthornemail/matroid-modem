@@ -1,0 +1,170 @@
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <h1>WESIRI</h1>
+    <span style="font-size:8px;color:var(--gold2);letter-spacing:2px">FEDERATED LIGHT PROTOCOL</span>
+    <div class="status-bar">
+      <span><span class="status-dot" style="background:var(--kk)"></span>BASIS</span>
+      <span id="hdr-lc">lc:0</span>
+      <span id="hdr-tick">tick:0</span>
+      <span id="hdr-angle">0.0°</span>
+      <span id="hdr-metric">Φ:0.00</span>
+      <span id="hdr-sabbath" style="color:var(--dim)">SABBATH:—</span>
+    </div>
+  </header>
+
+  <!-- LEFT: Document Graph + Controls -->
+  <div class="panel">
+    <div class="panel-title">Document Graph · Federated SVGs</div>
+    <div class="panel-body">
+
+      <div style="margin-bottom:10px">
+        <div class="ctrl-row">
+          <span class="ctrl-label">spin speed</span>
+          <input type="range" id="spin-speed" min="0.1" max="3" step="0.1" value="0.5">
+          <span id="spin-val" style="font-size:8px;color:var(--gold);width:28px">0.5°</span>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">auto-rotate</span>
+          <button class="btn active" id="btn-rotate" onclick="toggleRotate()">ON</button>
+          <button class="btn" id="btn-sabbath" onclick="seekSabbath()">SEEK Ω</button>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">pattern</span>
+          <button class="btn" onclick="runPattern('tetrahedral_sweep')">SWEEP</button>
+          <button class="btn" onclick="runPattern('fano_line_cycle')">LINES</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:8px;font-size:7px;color:var(--dim);letter-spacing:1px">SVG DOCUMENT NODES</div>
+      <div id="doc-graph"></div>
+
+      <div style="margin-top:12px;margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">ESP32 LATTICE</div>
+      <div id="esp-list"></div>
+
+      <div style="margin-top:12px;margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">NDJSON COMMIT LOG</div>
+      <div id="stream-log"></div>
+    </div>
+  </div>
+
+  <!-- CENTRE: Main light ring canvas -->
+  <div id="centre">
+    <div id="main-canvas-wrap">
+      <svg id="rings-svg" viewBox="-300 -300 600 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="glow-sm">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="glow-md">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="glow-lg">
+            <feGaussianBlur stdDeviation="8" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Fano lines (drawn first, below LEDs) -->
+        <g id="svg-fano-lines"></g>
+
+        <!-- Epistemic square overlay (rotating) -->
+        <g id="ep-square-overlay" opacity="0.15">
+          <line x1="-240" y1="0" x2="240" y2="0" stroke="var(--gold2)" stroke-width="0.5"/>
+          <line x1="0" y1="-240" x2="0" y2="240" stroke="var(--gold2)" stroke-width="0.5"/>
+        </g>
+
+        <!-- Ring groups -->
+        <g id="svg-rings"></g>
+
+        <!-- 16x16 window overlay (outermost) -->
+        <g id="svg-window" opacity="0.4" transform="rotate(0)"></g>
+
+        <!-- Center LED -->
+        <circle id="led-center" cx="0" cy="0" r="8" fill="var(--white)" class="led"
+                data-path="m/240'/0'/0'/8'" data-fano="8"
+                filter="url(#glow-md)"/>
+        <text x="0" y="16" text-anchor="middle" fill="var(--gold2)"
+              style="font-family:var(--mono);font-size:7px">genesis·gate</text>
+      </svg>
+    </div>
+
+    <!-- Active line indicator -->
+    <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+                display:flex;gap:6px;align-items:center">
+      <span style="font-size:7px;color:var(--gold2);letter-spacing:1px">ACTIVE LINE</span>
+      <div id="active-line-display" style="font-size:10px;color:var(--gold);font-family:var(--serif)">—</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Epistemic square + SPO state -->
+  <div class="panel">
+    <div class="panel-title">Epistemic State · Rumsfeldian</div>
+    <div class="panel-body">
+
+      <!-- Mini epistemic square -->
+      <svg id="ep-svg" viewBox="0 0 200 200" style="width:100%;height:160px;margin-bottom:8px">
+        <rect width="100" height="100" x="100" y="100" fill="rgba(0,255,68,0.08)"/>
+        <rect width="100" height="100" x="0"   y="100" fill="rgba(255,238,0,0.08)"/>
+        <rect width="100" height="100" x="100" y="0"   fill="rgba(255,136,0,0.08)"/>
+        <rect width="100" height="100" x="0"   y="0"   fill="rgba(68,85,255,0.08)"/>
+        <line x1="100" y1="0" x2="100" y2="200" stroke="var(--dim)" stroke-width="1"/>
+        <line x1="0" y1="100" x2="200" y2="100" stroke="var(--dim)" stroke-width="1"/>
+        <text x="150" y="195" text-anchor="middle" fill="var(--kk)" style="font-size:7px;font-family:var(--mono)">KK</text>
+        <text x="50"  y="195" text-anchor="middle" fill="var(--ku)" style="font-size:7px;font-family:var(--mono)">KU</text>
+        <text x="150" y="12"  text-anchor="middle" fill="var(--uk)" style="font-size:7px;font-family:var(--mono)">UK</text>
+        <text x="50"  y="12"  text-anchor="middle" fill="var(--uu)" style="font-size:7px;font-family:var(--mono)">UU</text>
+        <g id="ep-points-g"></g>
+        <circle cx="100" cy="100" r="3" fill="var(--white)" opacity="0.6"/>
+      </svg>
+
+      <!-- SPO table -->
+      <div style="margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">SPO CONTEXT</div>
+      <div id="spo-table"></div>
+
+      <!-- Centroid -->
+      <div style="margin-top:10px;margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">CENTROID · STOP METRIC</div>
+      <div class="centroid-bar-wrap">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span class="centroid-val" id="cent-metric">0.00</span>
+          <span id="cent-sabbath" style="font-size:9px;color:var(--dim)">Φ</span>
+        </div>
+        <div class="centroid-bar-bg">
+          <div class="centroid-bar-fill" id="cent-bar" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Face invariants -->
+      <div style="margin-top:10px;margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">FACE INVARIANTS · L1–L7</div>
+      <div id="face-table"></div>
+
+      <!-- Basis hash -->
+      <div style="margin-top:10px;margin-bottom:6px;font-size:7px;color:var(--dim);letter-spacing:1px">BASIS · HASH</div>
+      <div id="basis-hash-text"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM: 16x16 window | NDJSON schema | WordNet basis | SPO narrative -->
+  <div id="bottom">
+    <div class="bottom-cell">
+      <div class="bottom-cell-title">16×16 Shared Array Buffer · w-depth</div>
+      <div id="window-grid"></div>
+    </div>
+    <div class="bottom-cell">
+      <div class="bottom-cell-title">WordNet Basis · Signed SPO Simplex</div>
+      <div id="wordnet-panel"></div>
+    </div>
+    <div class="bottom-cell">
+      <div class="bottom-cell-title">NDJSON CommitEvent · Schema</div>
+      <div id="schema-panel" style="font-size:7px;color:var(--gold2);line-height:1.7;overflow-y:auto;max-height:150px"></div>
+    </div>
+    <div class="bottom-cell">
+      <div class="bottom-cell-title">Narrative · SPO Triple Stream</div>
+      <div id="narrative-panel" style="font-size:8px;color:var(--gold2);line-height:1.8;overflow-y:auto;max-height:150px;font-family:var(--serif);font-style:italic"></div>
+    </div>
+  </div>
+
+</div>
+

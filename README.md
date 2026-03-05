@@ -271,6 +271,21 @@ Portal entry:
 http://127.0.0.1:8787/wesiri-modem-full-calibrated-autoqr.html
 ```
 
+React/TypeScript dev shell (Vite):
+
+```bash
+npm run dev:web
+```
+
+Open:
+
+```text
+http://127.0.0.1:5173/
+```
+
+The Vite app now mounts `public/wesiri.html` runtime directly (no iframe) using extracted legacy markup/CSS/JS under `web/src/legacy/`.
+Stream log, schema panel, narrative panel, 16×16 window grid, basis hash, header status, SPO table, face invariants, and centroid panel are now rendered by React via a typed bridge (`window.__wesiriBridge`).
+
 Optional: pin the portal basis for federation demos:
 
 ```text
