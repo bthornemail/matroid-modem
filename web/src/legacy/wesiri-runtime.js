@@ -53,10 +53,10 @@ const HW_LAYERS = [
 // SVG documents in the federated graph
 const SVG_DOCS = [
   { id:'fano-garden-seed-kernel', name:'Seed Kernel',       hash:'0xa1b2c3d4', type:'canonical', color:'#c9b99a' },
-  { id:'fano-with-light-arrays',  name:'Light Arrays',      hash:'0xe5f6a7b8', type:'projection', color:'#3090ff' },
+  { id:'fano-with-light-arrays',  name:'Light Arrays',      hash:'0xe5f6a7b8', type:'view', color:'#3090ff' },
   { id:'fano-garden',             name:'Garden',            hash:'0xc9d0e1f2', type:'instance',   color:'#40d048' },
   { id:'epistemic-square',        name:'Epistemic Square',  hash:'0x23a4b5c6', type:'operator',   color:'#ffee00' },
-  { id:'dome-svg',                name:'Dome',              hash:'0x78d9e0f1', type:'projection', color:'#ff9030' },
+  { id:'dome-svg',                name:'Dome',              hash:'0x78d9e0f1', type:'view', color:'#ff9030' },
 ];
 
 // Mock ESP32 nodes in the C3 lattice
@@ -181,10 +181,10 @@ function computeCentroid(faces) {
 }
 
 // ═══════════════════════════════════════════════════════
-// COMMIT EMISSION
+// WIRE RECORD EMISSION (v0.1)
 // ═══════════════════════════════════════════════════════
 
-function emitCommit(type, extra = {}) {
+function emitWireRecord(type, extra = {}) {
   const payload = {
     id:     `cmt-${state.cycle}-${state.tick}-${Date.now()}`,
     t:      Date.now(),
@@ -215,7 +215,7 @@ function emitCommit(type, extra = {}) {
   });
 
   // Narrative
-  if (type === 'face_eval' || type === 'commit') {
+  if (type === 'commit') {
     buildNarrative(payload);
   }
 
@@ -640,7 +640,7 @@ function selectDoc(id) {
 
   const bridge = window.__wesiriBridge;
   if (bridge && bridge.renderMode === 'react') {
-    appendStream({ lc:state.lc++, type:'projection', t:Date.now(),
+    appendStream({ lc:state.lc++, type:'rx_frame', t:Date.now(),
       self_hash: hashStr('prj:'+id+Date.now()),
       prev_hash: state.prevHash,
       centroid: state.centroid,
@@ -651,7 +651,7 @@ function selectDoc(id) {
   document.querySelectorAll('.doc-node').forEach(n => n.classList.remove('active'));
   const el = document.getElementById('docnode-' + id);
   if (el) el.classList.add('active');
-  appendStream({ lc:state.lc++, type:'projection', t:Date.now(),
+  appendStream({ lc:state.lc++, type:'rx_frame', t:Date.now(),
     self_hash: hashStr('prj:'+id+Date.now()),
     prev_hash: state.prevHash,
     centroid: state.centroid,
@@ -680,7 +680,7 @@ function buildESPList() {
 function runPattern(name) {
   state.pattern = name;
   state.patternStep = 0;
-  appendStream({ lc:state.lc++, type:'face_eval', t:Date.now(),
+  appendStream({ lc:state.lc++, type:'tx_frame', t:Date.now(),
     self_hash: hashStr('pat:'+name), prev_hash: state.prevHash,
     centroid: state.centroid, id:`pat-${name}-${Date.now()}` });
 }
@@ -839,12 +839,10 @@ function tick() {
   // Pattern
   if (frameCount % 8 === 0) stepPattern();
 
-  // Emit commits at transition boundaries (every ~10 frames)
+  // Emit wire records at transition boundaries (every ~10 frames)
   if (frameCount % 10 === 0) {
-    const type = state.centroid.sabbath ? 'commit'
-               : state.tick % 90 === 0  ? 'sync'
-               : 'face_eval';
-    emitCommit(type);
+    const type = state.centroid.sabbath ? 'commit' : 'tx_frame';
+    emitWireRecord(type);
   }
 
   frameCount++;
@@ -869,11 +867,11 @@ function init() {
     document.getElementById('basis-hash-text').textContent = state.basisHash;
   }
 
-  // Initial commit
+  // Initial wire record
   state.quadrants = updateQuadrants(0);
   state.faces     = evaluateFaces(state.quadrants);
   state.centroid  = computeCentroid(state.faces);
-  emitCommit('vertex_init');
+  emitWireRecord('commit');
 
   // Select first doc
   selectDoc('fano-garden-seed-kernel');

@@ -61,10 +61,10 @@ export const QUADRANT_MAP: Record<Quadrant, { spo: string; role: string; repl: s
 
 export const SVG_DOCS = [
   { id: 'fano-garden-seed-kernel', name: 'Seed Kernel', hash: '0xa1b2c3d4', type: 'canonical', color: '#c9b99a' },
-  { id: 'fano-with-light-arrays', name: 'Light Arrays', hash: '0xe5f6a7b8', type: 'projection', color: '#3090ff' },
+  { id: 'fano-with-light-arrays', name: 'Light Arrays', hash: '0xe5f6a7b8', type: 'view', color: '#3090ff' },
   { id: 'fano-garden', name: 'Garden', hash: '0xc9d0e1f2', type: 'instance', color: '#40d048' },
   { id: 'epistemic-square', name: 'Epistemic Square', hash: '0x23a4b5c6', type: 'operator', color: '#ffee00' },
-  { id: 'dome-svg', name: 'Dome', hash: '0x78d9e0f1', type: 'projection', color: '#ff9030' },
+  { id: 'dome-svg', name: 'Dome', hash: '0x78d9e0f1', type: 'view', color: '#ff9030' },
 ] as const;
 
 export function hashStr(s: string): string {
