@@ -17,21 +17,6 @@ export type FaceRow = {
   invariant_name: string;
 };
 
-export type CommitRecord = {
-  id: string;
-  t: number;
-  lc: number;
-  type: string;
-  tick: number;
-  angle: string;
-  centroid: { stop_metric: number; closure_ratio: number; sabbath: boolean; reason: string; pass: number };
-  faces: FaceRow[];
-  basisHash: string;
-  prev_hash: string | null;
-  self_hash: string;
-  sig: string;
-};
-
 export type SimState = {
   angle: number;
   spinSpeed: number;

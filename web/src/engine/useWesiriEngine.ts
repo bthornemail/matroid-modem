@@ -29,7 +29,7 @@ export function useWesiriEngine() {
     frame: 0,
   });
 
-  const { records, schemaText, narratives, emitCommit } = useCommitStream();
+  const { records, quarantine, schemaText, narratives, ingestNdjsonText, emitProtocolTriplet } = useCommitStream();
 
   const [headerStatus, setHeaderStatus] = useState({ lc: 0, tick: 0, angle: 0, stopMetric: 0, sabbath: false });
   const [windowColors, setWindowColors] = useState<string[]>(Array.from({ length: 256 }, () => 'rgba(68,85,255,0.1)'));
@@ -88,12 +88,11 @@ export function useWesiriEngine() {
     setWindowColors(colors);
 
     if (sim.frame % 10 === 0) {
-      const commitType = centroid.sabbath ? 'commit' : sim.tick % 90 === 0 ? 'sync' : 'face_eval';
-      emitCommit(sim, commitType, centroid, faces, quads);
+      emitProtocolTriplet(sim, centroid, faces, quads);
     }
 
     sim.frame++;
-  }, [emitCommit]);
+  }, [emitProtocolTriplet]);
 
   useEffect(() => {
     tick();
@@ -145,6 +144,7 @@ export function useWesiriEngine() {
     activeDoc,
     controls,
     records,
+    quarantine,
     schemaText,
     narratives,
     headerStatus,
@@ -157,6 +157,7 @@ export function useWesiriEngine() {
     runPattern,
     seekSabbath,
     selectDoc,
+    ingestNdjsonText,
   };
 }
 

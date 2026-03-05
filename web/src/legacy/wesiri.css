@@ -145,7 +145,7 @@ header .status-bar {
   background: var(--bg1);
   border-top: 1px solid var(--dim);
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1px;
   background: var(--dim);
 }
@@ -185,9 +185,8 @@ header .status-bar {
 }
 
 .stream-line.commit  { border-color: var(--kk); color: #88ffaa; }
-.stream-line.sync    { border-color: var(--ku); color: #ffee88; }
-.stream-line.face_eval { border-color: var(--uk); color: #ffaa66; }
-.stream-line.projection { border-color: var(--uu); color: #8899ff; }
+.stream-line.tx_frame { border-color: var(--ku); color: #ffee88; }
+.stream-line.rx_frame { border-color: var(--uk); color: #ffaa66; }
 
 @keyframes fadein { from { opacity:0; transform: translateX(-4px); } to { opacity:1; transform: translateX(0); } }
 

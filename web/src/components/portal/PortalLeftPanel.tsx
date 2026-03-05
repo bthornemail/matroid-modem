@@ -72,13 +72,22 @@ export default function PortalLeftPanel({ engine }: PortalLeftPanelProps) {
           ))}
         </div>
 
-        <div style={{ marginTop: 12, marginBottom: 6, fontSize: 7, color: 'var(--dim)', letterSpacing: 1 }}>NDJSON COMMIT LOG</div>
+        <div style={{ marginTop: 12, marginBottom: 6, fontSize: 7, color: 'var(--dim)', letterSpacing: 1 }}>NDJSON WIRE STREAM (V0.1)</div>
         <div id="stream-log">
-          {engine.records.map((record, index) => (
-            <div key={`${record.lc}-${index}`} className={`stream-line ${record.type}`}>
-              {`lc:${record.lc} ${record.type} ${record.self_hash.slice(0, 14)}… Φ:${record.centroid.stop_metric.toFixed(2)}`}
-            </div>
-          ))}
+          {engine.records.map((record, index) => {
+            if (record.type === 'commit') {
+              return (
+                <div key={`${record.self_hash}-${index}`} className={`stream-line ${record.type}`}>
+                  {`lc:${record.lc} commit ${record.self_hash.slice(0, 14)}… Φ:${record.centroid.stop_metric.toFixed(2)}`}
+                </div>
+              );
+            }
+            return (
+              <div key={`${record.self_hash}-${index}`} className={`stream-line ${record.type}`}>
+                {`r:${record.register_state} h:${record.hexagram_index} ${record.type} ${record.self_hash.slice(0, 14)}…`}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
