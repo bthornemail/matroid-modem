@@ -1,38 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useWesiriEngine } from './engine/useWesiriEngine';
 import legacyMarkup from './legacy/wesiri-markup.html?raw';
-import legacyRuntime from './legacy/wesiri-runtime.js?raw';
 import './legacy/wesiri.css';
-
-type CommitRecord = {
-  id?: string;
-  t?: number;
-  lc?: number;
-  type?: string;
-  self_hash?: string;
-  prev_hash?: string;
-  centroid?: { stop_metric?: number };
-};
-
-type SpoRow = {
-  id: number;
-  name: string;
-  color: string;
-  q: string;
-  role: string;
-  repl: string;
-  io: string;
-};
-
-type FaceRow = {
-  face_id: string;
-  vertices: number[];
-  status: string;
-  invariant_name: string;
-};
 
 export default function App() {
   const mountRef = useRef<HTMLDivElement>(null);
+
+  const [controlsNode, setControlsNode] = useState<HTMLElement | null>(null);
+  const [docGraphNode, setDocGraphNode] = useState<HTMLElement | null>(null);
   const [basisNode, setBasisNode] = useState<HTMLElement | null>(null);
   const [windowNode, setWindowNode] = useState<HTMLElement | null>(null);
   const [hdrLcNode, setHdrLcNode] = useState<HTMLElement | null>(null);
@@ -48,71 +24,17 @@ export default function App() {
   const [streamNode, setStreamNode] = useState<HTMLElement | null>(null);
   const [schemaNode, setSchemaNode] = useState<HTMLElement | null>(null);
   const [narrativeNode, setNarrativeNode] = useState<HTMLElement | null>(null);
-  const [records, setRecords] = useState<CommitRecord[]>([]);
-  const [schemaText, setSchemaText] = useState<string>('');
-  const [narratives, setNarratives] = useState<string[]>([]);
-  const [basisHash, setBasisHash] = useState<string>('');
-  const [headerStatus, setHeaderStatus] = useState({
-    lc: 0,
-    tick: 0,
-    angle: 0,
-    stopMetric: 0,
-    sabbath: false,
-  });
-  const [windowColors, setWindowColors] = useState<string[]>([]);
-  const [spoRows, setSpoRows] = useState<SpoRow[]>([]);
-  const [faceRows, setFaceRows] = useState<FaceRow[]>([]);
-  const [centroidPanel, setCentroidPanel] = useState({ stopMetric: 0, sabbath: false });
+
+  const engine = useWesiriEngine();
 
   useEffect(() => {
     const mountNode = mountRef.current;
     if (!mountNode) return;
 
-    window.__wesiriBridge = {
-      renderMode: 'react',
-      onCommit: (record) => {
-        const commit = record as CommitRecord;
-        setRecords((prev) => [commit, ...prev].slice(0, 40));
-        setSchemaText(
-          JSON.stringify(
-            {
-              id: commit.id ? `${commit.id.slice(0, 20)}…` : undefined,
-              t: commit.t,
-              lc: commit.lc,
-              type: commit.type,
-              centroid: commit.centroid,
-              prev_hash: commit.prev_hash ? `${commit.prev_hash.slice(0, 14)}…` : undefined,
-              self_hash: commit.self_hash ? `${commit.self_hash.slice(0, 14)}…` : undefined,
-            },
-            null,
-            1,
-          ),
-        );
-      },
-      onNarratives: (items) => setNarratives(items),
-      onTickStatus: (status) => {
-        setHeaderStatus((prev) => ({
-          ...prev,
-          lc: status.lc,
-          tick: status.tick,
-          angle: status.angle,
-        }));
-      },
-      onCentroidStatus: (status) => {
-        setHeaderStatus((prev) => ({
-          ...prev,
-          stopMetric: status.stopMetric,
-          sabbath: status.sabbath,
-        }));
-      },
-      onBasisHash: (hash) => setBasisHash(hash),
-      onWindowColors: (colors) => setWindowColors(colors),
-      onSPO: (rows) => setSpoRows(rows as SpoRow[]),
-      onFaces: (faces) => setFaceRows(faces as FaceRow[]),
-      onCentroidPanel: (data) => setCentroidPanel(data),
-    };
-
     mountNode.innerHTML = legacyMarkup;
+
+    setControlsNode(mountNode.querySelector('#controls-panel') as HTMLElement | null);
+    setDocGraphNode(mountNode.querySelector('#doc-graph') as HTMLElement | null);
     setBasisNode(mountNode.querySelector('#basis-hash-text') as HTMLElement | null);
     setWindowNode(mountNode.querySelector('#window-grid') as HTMLElement | null);
     setHdrLcNode(mountNode.querySelector('#hdr-lc') as HTMLElement | null);
@@ -129,72 +51,78 @@ export default function App() {
     setSchemaNode(mountNode.querySelector('#schema-panel') as HTMLElement | null);
     setNarrativeNode(mountNode.querySelector('#narrative-panel') as HTMLElement | null);
 
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.text = legacyRuntime;
-    mountNode.appendChild(script);
-
     return () => {
-      delete window.__wesiriBridge;
       mountNode.innerHTML = '';
-      setBasisNode(null);
-      setWindowNode(null);
-      setHdrLcNode(null);
-      setHdrTickNode(null);
-      setHdrAngleNode(null);
-      setHdrMetricNode(null);
-      setHdrSabbathNode(null);
-      setSpoNode(null);
-      setFaceNode(null);
-      setCentMetricNode(null);
-      setCentBarNode(null);
-      setCentSabbathNode(null);
-      setStreamNode(null);
-      setSchemaNode(null);
-      setNarrativeNode(null);
     };
   }, []);
 
   useEffect(() => {
     if (!centBarNode) return;
-    centBarNode.style.width = `${centroidPanel.stopMetric * 100}%`;
-  }, [centBarNode, centroidPanel.stopMetric]);
+    centBarNode.style.width = `${engine.centroidPanel.stopMetric * 100}%`;
+  }, [centBarNode, engine.centroidPanel.stopMetric]);
 
   return (
     <main className="app">
       <div ref={mountRef} className="legacy-mount" />
-      {streamNode &&
+
+      {controlsNode &&
         createPortal(
           <>
-            {records.map((record, index) => (
-              <div key={`${record.lc ?? 'x'}-${index}`} className={`stream-line ${record.type ?? ''}`}>
-                {`lc:${record.lc ?? '—'} ${record.type ?? 'record'} ${record.self_hash?.slice(0, 14) ?? ''}… Φ:${record.centroid?.stop_metric?.toFixed(2) ?? '—'}`}
+            <div className="ctrl-row">
+              <span className="ctrl-label">spin speed</span>
+              <input
+                type="range"
+                min="0.1"
+                max="3"
+                step="0.1"
+                value={engine.controls.spinSpeed}
+                onChange={(event) => engine.setSpinSpeed(Number(event.target.value))}
+              />
+              <span style={{ fontSize: '8px', color: 'var(--gold)', width: '28px' }}>{`${engine.controls.spinSpeed.toFixed(1)}°`}</span>
+            </div>
+            <div className="ctrl-row">
+              <span className="ctrl-label">auto-rotate</span>
+              <button className={`btn ${engine.controls.autoRotate ? 'active' : ''}`} onClick={engine.toggleRotate}>
+                {engine.controls.autoRotate ? 'ON' : 'OFF'}
+              </button>
+              <button className="btn" onClick={engine.seekSabbath}>
+                SEEK Ω
+              </button>
+            </div>
+            <div className="ctrl-row">
+              <span className="ctrl-label">pattern</span>
+              <button className="btn" onClick={() => engine.runPattern('tetrahedral_sweep')}>
+                SWEEP
+              </button>
+              <button className="btn" onClick={() => engine.runPattern('fano_line_cycle')}>
+                LINES
+              </button>
+            </div>
+          </>,
+          controlsNode,
+        )}
+
+      {docGraphNode &&
+        createPortal(
+          <>
+            {engine.docs.map((doc) => (
+              <div key={doc.id} className={`doc-node ${engine.activeDoc === doc.id ? 'active' : ''}`} onClick={() => engine.selectDoc(doc.id)}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: doc.color, fontSize: '9px' }}>{doc.name}</span>
+                  <span className="doc-node-type">{doc.type}</span>
+                </div>
+                <div className="doc-node-hash">{`${doc.hash} · ${doc.id}`}</div>
               </div>
             ))}
           </>,
-          streamNode,
+          docGraphNode,
         )}
-      {schemaNode &&
-        createPortal(
-          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: '7px', lineHeight: 1.7 }}>{schemaText}</pre>,
-          schemaNode,
-        )}
-      {narrativeNode &&
-        createPortal(
-          <>
-            {narratives.map((text, index) => (
-              <div key={`${index}-${text.slice(0, 16)}`} style={{ padding: '2px 0', borderBottom: '1px solid var(--dimmer)' }}>
-                {text}
-              </div>
-            ))}
-          </>,
-          narrativeNode,
-        )}
-      {basisNode && createPortal(<>{basisHash}</>, basisNode)}
+
+      {basisNode && createPortal(<>{engine.basisHash}</>, basisNode)}
       {windowNode &&
         createPortal(
           <>
-            {windowColors.map((background, index) => (
+            {engine.windowColors.map((background, index) => (
               <div
                 key={index}
                 className="win-cell"
@@ -205,21 +133,23 @@ export default function App() {
           </>,
           windowNode,
         )}
-      {hdrLcNode && createPortal(<>{`lc:${headerStatus.lc}`}</>, hdrLcNode)}
-      {hdrTickNode && createPortal(<>{`tick:${headerStatus.tick}`}</>, hdrTickNode)}
-      {hdrAngleNode && createPortal(<>{`${headerStatus.angle.toFixed(1)}°`}</>, hdrAngleNode)}
-      {hdrMetricNode && createPortal(<>{`Φ:${headerStatus.stopMetric.toFixed(2)}`}</>, hdrMetricNode)}
+
+      {hdrLcNode && createPortal(<>{`lc:${engine.headerStatus.lc}`}</>, hdrLcNode)}
+      {hdrTickNode && createPortal(<>{`tick:${engine.headerStatus.tick}`}</>, hdrTickNode)}
+      {hdrAngleNode && createPortal(<>{`${engine.headerStatus.angle.toFixed(1)}°`}</>, hdrAngleNode)}
+      {hdrMetricNode && createPortal(<>{`Φ:${engine.headerStatus.stopMetric.toFixed(2)}`}</>, hdrMetricNode)}
       {hdrSabbathNode &&
         createPortal(
-          <span style={{ color: headerStatus.sabbath ? '#00ff44' : 'var(--dim)' }}>
-            {headerStatus.sabbath ? 'SABBATH:✦' : 'SABBATH:—'}
+          <span style={{ color: engine.headerStatus.sabbath ? '#00ff44' : 'var(--dim)' }}>
+            {engine.headerStatus.sabbath ? 'SABBATH:✦' : 'SABBATH:—'}
           </span>,
           hdrSabbathNode,
         )}
+
       {spoNode &&
         createPortal(
           <>
-            {spoRows.map((row) => (
+            {engine.spoRows.map((row) => (
               <div key={row.id} className="spo-row">
                 <span className="spo-name" style={{ color: row.color }}>
                   {row.name}
@@ -232,10 +162,11 @@ export default function App() {
           </>,
           spoNode,
         )}
+
       {faceNode &&
         createPortal(
           <>
-            {faceRows.map((face) => (
+            {engine.faceRows.map((face) => (
               <div key={face.face_id} className="face-row">
                 <span className="face-id">{face.face_id}</span>
                 <span className="face-pts">{`{${face.vertices.join(',')}}`}</span>
@@ -246,13 +177,46 @@ export default function App() {
           </>,
           faceNode,
         )}
-      {centMetricNode && createPortal(<>{centroidPanel.stopMetric.toFixed(4)}</>, centMetricNode)}
+
+      {centMetricNode && createPortal(<>{engine.centroidPanel.stopMetric.toFixed(4)}</>, centMetricNode)}
       {centSabbathNode &&
         createPortal(
-          <span style={{ color: centroidPanel.sabbath ? '#00ff44' : 'var(--dim)' }}>
-            {centroidPanel.sabbath ? 'SABBATH ✦' : `Φ ${(centroidPanel.stopMetric * 7).toFixed(0)}/7`}
+          <span style={{ color: engine.centroidPanel.sabbath ? '#00ff44' : 'var(--dim)' }}>
+            {engine.centroidPanel.sabbath
+              ? 'SABBATH ✦'
+              : `Φ ${(engine.centroidPanel.stopMetric * 7).toFixed(0)}/7`}
           </span>,
           centSabbathNode,
+        )}
+
+      {streamNode &&
+        createPortal(
+          <>
+            {engine.records.map((record, index) => (
+              <div key={`${record.lc ?? 'x'}-${index}`} className={`stream-line ${record.type ?? ''}`}>
+                {`lc:${record.lc ?? '—'} ${record.type ?? 'record'} ${record.self_hash?.slice(0, 14) ?? ''}… Φ:${record.centroid?.stop_metric?.toFixed(2) ?? '—'}`}
+              </div>
+            ))}
+          </>,
+          streamNode,
+        )}
+
+      {schemaNode &&
+        createPortal(
+          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: '7px', lineHeight: 1.7 }}>{engine.schemaText}</pre>,
+          schemaNode,
+        )}
+
+      {narrativeNode &&
+        createPortal(
+          <>
+            {engine.narratives.map((text, index) => (
+              <div key={`${index}-${text.slice(0, 16)}`} style={{ padding: '2px 0', borderBottom: '1px solid var(--dimmer)' }}>
+                {text}
+              </div>
+            ))}
+          </>,
+          narrativeNode,
         )}
     </main>
   );

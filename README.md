@@ -283,8 +283,8 @@ Open:
 http://127.0.0.1:5173/
 ```
 
-The Vite app now mounts `public/wesiri.html` runtime directly (no iframe) using extracted legacy markup/CSS/JS under `web/src/legacy/`.
-Stream log, schema panel, narrative panel, 16×16 window grid, basis hash, header status, SPO table, face invariants, and centroid panel are now rendered by React via a typed bridge (`window.__wesiriBridge`).
+The Vite app now mounts `public/wesiri.html` markup directly (no iframe) using extracted legacy markup/CSS under `web/src/legacy/`.
+Runtime state/controls are now provided by a typed React engine hook (`web/src/engine/useWesiriEngine.ts`) and rendered through React portals.
 
 Optional: pin the portal basis for federation demos:
 

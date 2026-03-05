@@ -100,6 +100,7 @@ let state = {
   basisHash:   '0x' + Array.from({length:32}, () => Math.floor(Math.random()*256).toString(16).padStart(2,'0')).join(''),
   sabGrid:     new Uint32Array(256),
   narratives:  [],
+  activeDoc:   SVG_DOCS[0]?.id ?? null,
 };
 
 // ═══════════════════════════════════════════════════════
@@ -616,6 +617,12 @@ function buildWordnetPanel() {
 // ═══════════════════════════════════════════════════════
 
 function buildDocGraph() {
+  const bridge = window.__wesiriBridge;
+  if (bridge && bridge.renderMode === 'react') {
+    emitDocState();
+    return;
+  }
+
   const el = document.getElementById('doc-graph');
   el.innerHTML = SVG_DOCS.map(doc => `
     <div class="doc-node" onclick="selectDoc('${doc.id}')" id="docnode-${doc.id}">
@@ -628,6 +635,19 @@ function buildDocGraph() {
 }
 
 function selectDoc(id) {
+  state.activeDoc = id;
+  emitDocState();
+
+  const bridge = window.__wesiriBridge;
+  if (bridge && bridge.renderMode === 'react') {
+    appendStream({ lc:state.lc++, type:'projection', t:Date.now(),
+      self_hash: hashStr('prj:'+id+Date.now()),
+      prev_hash: state.prevHash,
+      centroid: state.centroid,
+      id: `prj-${id}-${Date.now()}` });
+    return;
+  }
+
   document.querySelectorAll('.doc-node').forEach(n => n.classList.remove('active'));
   const el = document.getElementById('docnode-' + id);
   if (el) el.classList.add('active');
@@ -695,7 +715,13 @@ function stepPattern() {
 
 function toggleRotate() {
   state.autoRotate = !state.autoRotate;
+  emitControlState();
+
+  const bridge = window.__wesiriBridge;
+  if (bridge && bridge.renderMode === 'react') return;
+
   const btn = document.getElementById('btn-rotate');
+  if (!btn) return;
   btn.textContent = state.autoRotate ? 'ON' : 'OFF';
   btn.classList.toggle('active', state.autoRotate);
 }
@@ -714,10 +740,61 @@ function seekSabbath() {
   }
 }
 
-document.getElementById('spin-speed').addEventListener('input', function() {
-  state.spinSpeed = parseFloat(this.value);
-  document.getElementById('spin-val').textContent = this.value + '°';
-});
+function setSpinSpeed(value) {
+  const parsed = Number.parseFloat(String(value));
+  state.spinSpeed = Number.isFinite(parsed) ? parsed : state.spinSpeed;
+  emitControlState();
+
+  const bridge = window.__wesiriBridge;
+  if (bridge && bridge.renderMode === 'react') return;
+
+  const valEl = document.getElementById('spin-val');
+  if (valEl) valEl.textContent = state.spinSpeed.toFixed(1) + '°';
+}
+
+function emitControlState() {
+  const bridge = window.__wesiriBridge;
+  if (bridge && bridge.renderMode === 'react' && typeof bridge.onControlState === 'function') {
+    bridge.onControlState({
+      spinSpeed: state.spinSpeed,
+      autoRotate: state.autoRotate,
+    });
+  }
+}
+
+function emitDocState() {
+  const bridge = window.__wesiriBridge;
+  if (bridge && bridge.renderMode === 'react' && typeof bridge.onDocs === 'function') {
+    bridge.onDocs({
+      docs: SVG_DOCS.map((doc) => ({ ...doc })),
+      activeDoc: state.activeDoc ?? null,
+    });
+  }
+}
+
+function bindBridgeCommands() {
+  const bridge = window.__wesiriBridge;
+  if (!(bridge && bridge.renderMode === 'react')) return;
+
+  bridge.commands = {
+    setSpinSpeed,
+    toggleRotate,
+    seekSabbath,
+    runPattern,
+    selectDoc,
+  };
+
+  emitControlState();
+  emitDocState();
+}
+
+const spinSpeedInput = document.getElementById('spin-speed');
+const bridgeMode = !!(window.__wesiriBridge && window.__wesiriBridge.renderMode === 'react');
+if (spinSpeedInput && !bridgeMode) {
+  spinSpeedInput.addEventListener('input', function() {
+    setSpinSpeed(this.value);
+  });
+}
 
 // ═══════════════════════════════════════════════════════
 // MAIN LOOP
@@ -779,6 +856,7 @@ function tick() {
 // ═══════════════════════════════════════════════════════
 
 function init() {
+  bindBridgeCommands();
   buildRings();
   buildDocGraph();
   buildESPList();
